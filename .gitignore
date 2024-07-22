@@ -1,6 +1,10 @@
 # Compiled class file
 *.class
 
+/target
+*.conn
+/.idea
+
 # Log file
 *.log
 
