@@ -11,9 +11,10 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
-import javafx.scene.control.Button;
-import javafx.scene.control.TreeItem;
-import javafx.scene.control.TreeView;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.HBox;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -23,6 +24,7 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 
+import static io.github.alexkitc.conf.Config.CONN_SPLIT_FLAG;
 import static io.github.alexkitc.conf.Config.NEW_CONN_ICON_PATH;
 
 /**
@@ -76,7 +78,7 @@ public class HomeController {
             return connFileList.stream()
                     .map(f -> {
                         try {
-                            String[] strings = Files.readString(f).split("###");
+                            String[] strings = Files.readString(f).split(CONN_SPLIT_FLAG);
                             return new ConnItem()
                                     .setName(strings[0])
                                     .setHost(strings[1])
@@ -103,6 +105,6 @@ public class HomeController {
         treeView.setRoot(root);
 
         //设置TreeCell工厂
-        treeView.setCellFactory(cell -> new MyConnItemTreeCell());
+        treeView.setCellFactory(item -> new MyConnItemTreeCell());
     }
 }

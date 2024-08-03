@@ -22,6 +22,8 @@ public class Config {
     public static final int APP_HEIGHT = 640;
     // app内图标尺寸
     public static final int ICON_SIZE = 18;
+    // 配置项分隔符
+    public static final String CONN_SPLIT_FLAG = "###";
     // 配置文件后缀
     public static final String CONFIG_FILE_SUFFIX = ".conn";
     // 主页fxml路径

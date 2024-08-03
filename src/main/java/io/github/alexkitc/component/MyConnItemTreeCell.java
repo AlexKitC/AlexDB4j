@@ -19,16 +19,9 @@ import java.util.Objects;
  */
 public class MyConnItemTreeCell extends TreeCell<TreeNode> {
 
-    private final ImageView imageView;
-    private final Text text;
+    private final ImageView imageView = new ImageView();
+    private final Text text = new Text();
 
-    public MyConnItemTreeCell() {
-        HBox row = new HBox();
-        imageView = new ImageView();
-        text = new Text();
-        row.getChildren().addAll(imageView, text);
-        setGraphic(row);
-    }
 
     @Override
     protected void updateItem(TreeNode item, boolean empty) {
@@ -36,15 +29,14 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
         if (empty || item == null) {
             setGraphic(null);
         } else {
+            text.setText(item.getName());
             imageView.setImage(new Image(Objects.requireNonNull(getClass().getResourceAsStream(item.getIcon()))));
             imageView.setFitWidth(Config.ICON_SIZE);
             imageView.setFitHeight(Config.ICON_SIZE);
-            text.setText(item.getName());
-            //根节点不设置图标
-            if (!item.getTreeNodeType().equals(TreeNodeType.ROOT)) {
-                setGraphic(imageView);
-            }
-            setText(item.getName());
+            // 根节点不设置图标
+            HBox hBox = item.getTreeNodeType().equals(TreeNodeType.ROOT) ? new HBox(new ImageView(), text) : new HBox(imageView, text);
+            hBox.setSpacing(5);
+            setGraphic(hBox);
         }
     }
 }
