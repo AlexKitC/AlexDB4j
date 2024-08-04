@@ -37,6 +37,16 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
             HBox hBox = item.getTreeNodeType().equals(TreeNodeType.ROOT) ? new HBox(new ImageView(), text) : new HBox(imageView, text);
             hBox.setSpacing(5);
             setGraphic(hBox);
+
+            // 添加点击事件
+            setOnMouseClicked(event -> {
+                if (event.getClickCount() == 2) {
+                    System.out.println(item);
+                    item.getDbList(item);
+                }
+            });
         }
+
+
     }
 }

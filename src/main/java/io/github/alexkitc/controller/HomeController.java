@@ -101,7 +101,7 @@ public class HomeController {
         TreeNode treeNode = new TreeNode("连接列表", TreeNodeType.ROOT, Config.CONN_ICON_PATH0);
         TreeItem<TreeNode> root = new TreeItem<>(treeNode);
         root.setExpanded(true);
-        connItemList.forEach(item -> root.getChildren().add(new TreeItem<>(new TreeNode(item.getName(), TreeNodeType.CONN, Config.CONN_ICON_PATH0))));
+        connItemList.forEach(item -> root.getChildren().add(new TreeItem<>(new TreeNode(item.getName(), TreeNodeType.CONN, Config.CONN_ICON_PATH0, item))));
         treeView.setRoot(root);
 
         //设置TreeCell工厂
