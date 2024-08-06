@@ -3,6 +3,7 @@ package io.github.alexkitc.component;
 import io.github.alexkitc.conf.Config;
 import io.github.alexkitc.entity.TreeNode;
 import io.github.alexkitc.entity.enums.TreeNodeType;
+import javafx.geometry.Pos;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.image.Image;
@@ -23,8 +24,13 @@ import java.util.stream.Collectors;
  */
 public class MyConnItemTreeCell extends TreeCell<TreeNode> {
 
+    // 图标
     private final ImageView imageView = new ImageView();
+    // 名称
     private final Text text = new Text();
+    // 字段类型+长度
+    private final Text typeAndLength = new Text();
+
 
     // 添加连接的点击事件
     public MyConnItemTreeCell() {
@@ -67,7 +73,7 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
                                 .toList();
                         for (TreeNode tableField : tableFieldList) {
                             if (!historyTableFieldList.contains(tableField.getName())) {
-                                getTreeItem().getChildren().add(new TreeItem<>(new TreeNode(tableField.getName(), TreeNodeType.FIELD, Config.CONN_ICON_TABLE_PATH0, tableField.getConnItem())));
+                                getTreeItem().getChildren().add(new TreeItem<>(new TreeNode(tableField.getName(), TreeNodeType.FIELD, Config.CONN_ICON_FIELD_PATH0, tableField.getConnItem(), tableField.getTypeAndLength())));
                             }
                         }
                         break;
@@ -101,11 +107,15 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
                     hBox = new HBox(imageView, text);
                     break;
                 case FIELD:
-                    hBox = new HBox(new ImageView(), text);
+                    typeAndLength.setText(item.getTypeAndLength());
+                    typeAndLength.setStyle("-fx-font-size: 10px;-fx-fill: #707070;");
+                    hBox = new HBox(imageView, text, typeAndLength);
+
                 default:
                     break;
 
             }
+            hBox.setAlignment(Pos.CENTER_LEFT);
             hBox.setSpacing(5);
             setGraphic(hBox);
         }
