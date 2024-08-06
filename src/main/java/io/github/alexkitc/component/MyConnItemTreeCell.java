@@ -24,18 +24,39 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
     private final ImageView imageView = new ImageView();
     private final Text text = new Text();
 
+    // 添加连接的点击事件
     public MyConnItemTreeCell() {
         setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
-                List<TreeNode> dbList = getTreeItem().getValue().getDbList(getTreeItem().getValue());
-                for (TreeNode db : dbList) {
-                    getTreeItem().getChildren().add(new TreeItem<>(new TreeNode(db.getName(), TreeNodeType.DB, Config.CONN_ICON_DB_PATH0, db.getConnItem())));
+                switch (getTreeItem().getValue().getTreeNodeType()) {
+                    case ROOT:
+                        break;
+                    case CONN:
+                        List<TreeNode> dbList = getTreeItem().getValue().getDbList(getTreeItem().getValue());
+                        for (TreeNode db : dbList) {
+                            getTreeItem().getChildren().add(new TreeItem<>(new TreeNode(db.getName(), TreeNodeType.DB, Config.CONN_ICON_DB_PATH0, db.getConnItem())));
+                        }
+                        getTreeItem().setExpanded(true);
+                        break;
+                    case DB:
+                        List<TreeNode> tableList = getTreeItem().getValue().getTableList(getTreeItem().getValue());
+                        for (TreeNode table : tableList) {
+                            getTreeItem().getChildren().add(new TreeItem<>(new TreeNode(table.getName(), TreeNodeType.DB, Config.CONN_ICON_TABLE_PATH0, table.getConnItem())));
+                        }
+                        getTreeItem().setExpanded(true);
+                        break;
+                    case TABLE:
+                        break;
+                    default:
+                        break;
                 }
-                getTreeItem().setExpanded(true);
+
+
             }
         });
     }
 
+    // 重写TreeItem：添加图标和间距
     @Override
     protected void updateItem(TreeNode item, boolean empty) {
         super.updateItem(item, empty);

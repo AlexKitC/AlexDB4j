@@ -1,5 +1,6 @@
 package io.github.alexkitc.entity;
 
+import io.github.alexkitc.conf.Config;
 import io.github.alexkitc.entity.enums.TreeNodeType;
 import javafx.scene.control.TreeItem;
 import lombok.Data;
@@ -59,6 +60,7 @@ public class TreeNode {
         this.icon = icon;
     }
 
+    // 获取数据库列表
     public List<TreeNode> getDbList(TreeNode currentTreeNode) {
         List<TreeNode> dbList = new ArrayList<>();
         String url = "jdbc:mysql://" + currentTreeNode.getConnItem().getHost()
@@ -72,14 +74,43 @@ public class TreeNode {
                 TreeNode dbItem = new TreeNode();
                 dbItem.setName(rs.getString(1));
                 dbItem.setTreeNodeType(TreeNodeType.DB);
-                //todo
+                dbItem.setIcon(Config.CONN_ICON_DB_PATH0);
+                dbItem.setConnItem(currentTreeNode.getConnItem());
                 dbList.add(dbItem);
             }
-            System.out.println(dbList);
             rs.close();
             stmt.close();
             conn.close();
             return dbList;
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // 获取指定数据库table列表
+    public List<TreeNode> getTableList(TreeNode currentTreeNode) {
+        List<TreeNode> tableList = new ArrayList<>();
+        String url = "jdbc:mysql://" + currentTreeNode.getConnItem().getHost()
+                + ":" + currentTreeNode.getConnItem().getPort()
+                + "/" + currentTreeNode.getName();
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection conn = DriverManager.getConnection(url, currentTreeNode.getConnItem().getUsername(), currentTreeNode.getConnItem().getPassword());
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery("SHOW TABLES;");
+            while (rs.next()) {
+                TreeNode tableItem = new TreeNode();
+                tableItem.setName(rs.getString(1));
+                tableItem.setTreeNodeType(TreeNodeType.TABLE);
+                tableItem.setIcon(Config.CONN_ICON_TABLE_PATH0);
+                tableItem.setConnItem(currentTreeNode.getConnItem());
+                tableList.add(tableItem);
+            }
+
+            rs.close();
+            stmt.close();
+            conn.close();
+            return tableList;
         } catch (ClassNotFoundException | SQLException e) {
             throw new RuntimeException(e);
         }
