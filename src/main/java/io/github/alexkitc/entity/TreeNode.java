@@ -78,7 +78,8 @@ public class TreeNode {
     public List<TreeNode> getDbList(TreeNode currentTreeNode) {
         List<TreeNode> dbList = new ArrayList<>();
         String url = "jdbc:mysql://" + currentTreeNode.getConnItem().getHost()
-                + ":" + currentTreeNode.getConnItem().getPort();
+                + ":" + currentTreeNode.getConnItem().getPort()
+                + "?useSSL=false";
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection conn = DriverManager.getConnection(url, currentTreeNode.getConnItem().getUsername(), currentTreeNode.getConnItem().getPassword());
@@ -106,7 +107,8 @@ public class TreeNode {
         List<TreeNode> tableList = new ArrayList<>();
         String url = "jdbc:mysql://" + currentTreeNode.getConnItem().getHost()
                 + ":" + currentTreeNode.getConnItem().getPort()
-                + "/" + currentTreeNode.getName();
+                + "/" + currentTreeNode.getName()
+                + "?useSSL=false";
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection conn = DriverManager.getConnection(url, currentTreeNode.getConnItem().getUsername(), currentTreeNode.getConnItem().getPassword());
@@ -135,7 +137,8 @@ public class TreeNode {
         List<TreeNode> tableFieldList = new ArrayList<>();
         String url = "jdbc:mysql://" + currentTreeNode.getConnItem().getHost()
                 + ":" + currentTreeNode.getConnItem().getPort()
-                + "/" + parent.getName();
+                + "/" + parent.getName()
+                + "?useSSL=false";
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection conn = DriverManager.getConnection(url, currentTreeNode.getConnItem().getUsername(), currentTreeNode.getConnItem().getPassword());
@@ -162,6 +165,35 @@ public class TreeNode {
             columns.close();
             conn.close();
             return tableFieldList;
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // 查询表数据
+    public List<TreeNode> getTableDataList(TreeNode parent, TreeNode currentTreeNode) {
+        List<TreeNode> dbList = new ArrayList<>();
+        String url = "jdbc:mysql://" + currentTreeNode.getConnItem().getHost()
+                + ":" + currentTreeNode.getConnItem().getPort()
+                + "/" + parent.getName()
+                + "?useSSL=false";
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection conn = DriverManager.getConnection(url, currentTreeNode.getConnItem().getUsername(), currentTreeNode.getConnItem().getPassword());
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM " + currentTreeNode.getName());
+            while (rs.next()) {
+                TreeNode dbItem = new TreeNode();
+                dbItem.setName(rs.getString(1));
+                dbItem.setTreeNodeType(TreeNodeType.DB);
+                dbItem.setIcon(Config.CONN_ICON_DB_PATH0);
+                dbItem.setConnItem(currentTreeNode.getConnItem());
+                dbList.add(dbItem);
+            }
+            rs.close();
+            stmt.close();
+            conn.close();
+            return dbList;
         } catch (ClassNotFoundException | SQLException e) {
             throw new RuntimeException(e);
         }

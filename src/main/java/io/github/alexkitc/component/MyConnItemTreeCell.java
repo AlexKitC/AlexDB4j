@@ -1,6 +1,8 @@
 package io.github.alexkitc.component;
 
+import io.github.alexkitc.App;
 import io.github.alexkitc.conf.Config;
+import io.github.alexkitc.controller.HomeController;
 import io.github.alexkitc.entity.TreeNode;
 import io.github.alexkitc.entity.enums.TreeNodeType;
 import javafx.geometry.Pos;
@@ -30,6 +32,7 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
     private final Text text = new Text();
     // 字段类型+长度
     private final Text typeAndLength = new Text();
+
 
 
     // 添加连接的点击事件
@@ -76,6 +79,8 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
                                 getTreeItem().getChildren().add(new TreeItem<>(new TreeNode(tableField.getName(), TreeNodeType.FIELD, Config.CONN_ICON_FIELD_PATH0, tableField.getConnItem(), tableField.getTypeAndLength())));
                             }
                         }
+                        // 新建TabPane容器展示数据
+                        App.homeControllerInstance.addTabPaneOfData(getTreeItem().getValue().getName(), getTreeItem().getValue().getConnItem().getHost());
                         break;
                     default:
                         break;
@@ -115,7 +120,9 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
                     break;
 
             }
+            //居中
             hBox.setAlignment(Pos.CENTER_LEFT);
+            // 图标和nama边距
             hBox.setSpacing(5);
             setGraphic(hBox);
         }
