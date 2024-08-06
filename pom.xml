@@ -71,31 +71,31 @@
         </dependency>
 
 
-        <build>
-            <plugins>
-                <plugin>
-                    <groupId>io.github.fvarrui</groupId>
-                    <artifactId>javapackager</artifactId>
-                    <version>1.7.5</version>
-                    <executions>
-                        <execution>
-                            <phase>package</phase>
-                            <goals>
-                                <goal>package</goal>
-                            </goals>
-                            <configuration>
-                                <mainClass>io.github.alexkitc.Bootstrap</mainClass>
-                                <bundleJre>true</bundleJre>
-                                <vmArgs>-Xmx256m</vmArgs>
-
-                            </configuration>
-                        </execution>
-                    </executions>
-                </plugin>
-            </plugins>
-        </build>
-
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>io.github.fvarrui</groupId>
+                <artifactId>javapackager</artifactId>
+                <version>1.7.5</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>package</goal>
+                        </goals>
+                        <configuration>
+                            <mainClass>io.github.alexkitc.Bootstrap</mainClass>
+                            <bundleJre>true</bundleJre>
+                            <vmArgs>-Xmx256m</vmArgs>
+
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
 
     <repositories>
         <repository>
@@ -103,6 +103,7 @@
             <url>https://maven.aliyun.com/repository/public</url>
         </repository>
     </repositories>
+
 
     <pluginRepositories>
         <pluginRepository>

@@ -23,8 +23,14 @@ import java.util.stream.Collectors;
  */
 public class MyConnItemTreeCell extends TreeCell<TreeNode> {
 
+    // TreeItem图标
     private final ImageView imageView = new ImageView();
+    // TreeItem 文本
     private final Text text = new Text();
+    // TreeItem Field类型的类型+长度
+    private final Text description = new Text();
+    // TreeItem Field类型的备注
+    private final Text memo = new Text();
 
     // 添加连接的点击事件
     public MyConnItemTreeCell() {
@@ -67,7 +73,7 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
                                 .toList();
                         for (TreeNode tableField : tableFieldList) {
                             if (!historyTableFieldList.contains(tableField.getName())) {
-                                getTreeItem().getChildren().add(new TreeItem<>(new TreeNode(tableField.getName(), TreeNodeType.FIELD, Config.CONN_ICON_TABLE_PATH0, tableField.getConnItem())));
+                                getTreeItem().getChildren().add(new TreeItem<>(new TreeNode(tableField.getName(), TreeNodeType.FIELD, Config.CONN_ICON_TABLE_PATH0, tableField.getConnItem(), tableField.getTypeAndLength())));
                             }
                         }
                         break;
@@ -101,7 +107,8 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
                     hBox = new HBox(imageView, text);
                     break;
                 case FIELD:
-                    hBox = new HBox(new ImageView(), text);
+                    description.setText(getTreeItem().getValue().getTypeAndLength());
+                    hBox = new HBox(text, description);
                 default:
                     break;
 

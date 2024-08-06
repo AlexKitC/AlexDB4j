@@ -26,6 +26,9 @@ public class TreeNode {
     // 节点的显示名
     private String name;
 
+    // 节点为Field类型时的字段类型+长度
+    private String typeAndLength;
+
     // 节点类型
     private TreeNodeType treeNodeType;
 
@@ -51,6 +54,14 @@ public class TreeNode {
         this.treeNodeType = treeNodeType;
         this.icon = icon;
         this.connItem = connItem;
+    }
+
+    public TreeNode(String name, TreeNodeType treeNodeType, String icon, ConnItem connItem, String typeAndLength) {
+        this.name = name;
+        this.treeNodeType = treeNodeType;
+        this.icon = icon;
+        this.connItem = connItem;
+        this.typeAndLength = null;
     }
 
     public TreeNode(String name, String icon) {
@@ -138,12 +149,13 @@ public class TreeNode {
                 int decimalDigits = columns.getInt("DECIMAL_DIGITS");
                 boolean isNullable = columns.getBoolean("IS_NULLABLE");
 
-                TreeNode tableItem = new TreeNode();
-                tableItem.setName(columnName);
-                tableItem.setTreeNodeType(TreeNodeType.FIELD);
-                tableItem.setIcon(Config.CONN_ICON_TABLE_PATH0);
-                tableItem.setConnItem(currentTreeNode.getConnItem());
-                tableFieldList.add(tableItem);
+                TreeNode tableFieldItem = new TreeNode();
+                tableFieldItem.setName(columnName);
+                tableFieldItem.setTypeAndLength(columnTypeName + "(" + columnSize + ")");
+                tableFieldItem.setTreeNodeType(TreeNodeType.FIELD);
+                tableFieldItem.setIcon(Config.CONN_ICON_TABLE_PATH0);
+                tableFieldItem.setConnItem(currentTreeNode.getConnItem());
+                tableFieldList.add(tableFieldItem);
             }
 
             columns.close();
