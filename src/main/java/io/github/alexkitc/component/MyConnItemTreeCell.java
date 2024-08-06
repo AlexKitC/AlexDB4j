@@ -10,8 +10,10 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author alexKitc
@@ -33,15 +35,27 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
                         break;
                     case CONN:
                         List<TreeNode> dbList = getTreeItem().getValue().getDbList(getTreeItem().getValue());
+                        List<String> historyDbList = getTreeItem().getChildren()
+                                .stream()
+                                .map(item -> item.getValue().getName())
+                                .toList();
                         for (TreeNode db : dbList) {
-                            getTreeItem().getChildren().add(new TreeItem<>(new TreeNode(db.getName(), TreeNodeType.DB, Config.CONN_ICON_DB_PATH0, db.getConnItem())));
+                            if (!historyDbList.contains(db.getName())) {
+                                getTreeItem().getChildren().add(new TreeItem<>(new TreeNode(db.getName(), TreeNodeType.DB, Config.CONN_ICON_DB_PATH0, db.getConnItem())));
+                            }
                         }
                         getTreeItem().setExpanded(true);
                         break;
                     case DB:
                         List<TreeNode> tableList = getTreeItem().getValue().getTableList(getTreeItem().getValue());
+                        List<String> historyTableList = getTreeItem().getChildren()
+                                .stream()
+                                .map(item -> item.getValue().getName())
+                                .toList();
                         for (TreeNode table : tableList) {
-                            getTreeItem().getChildren().add(new TreeItem<>(new TreeNode(table.getName(), TreeNodeType.DB, Config.CONN_ICON_TABLE_PATH0, table.getConnItem())));
+                            if (!historyTableList.contains(table.getName())) {
+                                getTreeItem().getChildren().add(new TreeItem<>(new TreeNode(table.getName(), TreeNodeType.DB, Config.CONN_ICON_TABLE_PATH0, table.getConnItem())));
+                            }
                         }
                         getTreeItem().setExpanded(true);
                         break;
