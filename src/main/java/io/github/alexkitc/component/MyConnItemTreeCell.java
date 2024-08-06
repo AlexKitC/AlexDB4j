@@ -92,7 +92,20 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
             imageView.setFitWidth(Config.ICON_SIZE);
             imageView.setFitHeight(Config.ICON_SIZE);
             // 根节点不设置图标
-            HBox hBox = item.getTreeNodeType().equals(TreeNodeType.ROOT) ? new HBox(new ImageView(), text) : new HBox(imageView, text);
+            HBox hBox = null;
+            switch (getTreeItem().getValue().getTreeNodeType()) {
+                case ROOT:
+                case CONN:
+                case DB:
+                case TABLE:
+                    hBox = new HBox(imageView, text);
+                    break;
+                case FIELD:
+                    hBox = new HBox(new ImageView(), text);
+                default:
+                    break;
+
+            }
             hBox.setSpacing(5);
             setGraphic(hBox);
         }
