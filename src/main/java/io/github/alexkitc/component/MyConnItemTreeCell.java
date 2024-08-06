@@ -54,12 +54,22 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
                                 .toList();
                         for (TreeNode table : tableList) {
                             if (!historyTableList.contains(table.getName())) {
-                                getTreeItem().getChildren().add(new TreeItem<>(new TreeNode(table.getName(), TreeNodeType.DB, Config.CONN_ICON_TABLE_PATH0, table.getConnItem())));
+                                getTreeItem().getChildren().add(new TreeItem<>(new TreeNode(table.getName(), TreeNodeType.TABLE, Config.CONN_ICON_TABLE_PATH0, table.getConnItem())));
                             }
                         }
                         getTreeItem().setExpanded(true);
                         break;
                     case TABLE:
+                        List<TreeNode> tableFieldList = getTreeItem().getValue().getTableFieldList(getTreeItem().getParent().getValue(), getTreeItem().getValue());
+                        List<String> historyTableFieldList = getTreeItem().getChildren()
+                                .stream()
+                                .map(item -> item.getValue().getName())
+                                .toList();
+                        for (TreeNode tableField : tableFieldList) {
+                            if (!historyTableFieldList.contains(tableField.getName())) {
+                                getTreeItem().getChildren().add(new TreeItem<>(new TreeNode(tableField.getName(), TreeNodeType.FIELD, Config.CONN_ICON_TABLE_PATH0, tableField.getConnItem())));
+                            }
+                        }
                         break;
                     default:
                         break;

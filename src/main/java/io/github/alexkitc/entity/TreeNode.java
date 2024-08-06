@@ -20,6 +20,9 @@ import java.util.List;
 @Accessors(chain = true)
 public class TreeNode {
 
+    private static final String SQL_SHOW_DATABASE = "SHOW DATABASES;";
+    private static final String SQL_SHOW_TABLE = "SHOW TABLES;";
+
     // 节点的显示名
     private String name;
 
@@ -69,7 +72,7 @@ public class TreeNode {
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection conn = DriverManager.getConnection(url, currentTreeNode.getConnItem().getUsername(), currentTreeNode.getConnItem().getPassword());
             Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SHOW DATABASES;");
+            ResultSet rs = stmt.executeQuery(SQL_SHOW_DATABASE);
             while (rs.next()) {
                 TreeNode dbItem = new TreeNode();
                 dbItem.setName(rs.getString(1));
@@ -97,7 +100,7 @@ public class TreeNode {
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection conn = DriverManager.getConnection(url, currentTreeNode.getConnItem().getUsername(), currentTreeNode.getConnItem().getPassword());
             Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SHOW TABLES;");
+            ResultSet rs = stmt.executeQuery(SQL_SHOW_TABLE);
             while (rs.next()) {
                 TreeNode tableItem = new TreeNode();
                 tableItem.setName(rs.getString(1));
@@ -111,6 +114,41 @@ public class TreeNode {
             stmt.close();
             conn.close();
             return tableList;
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // 获取指定数据库指定table的field列表
+    public List<TreeNode> getTableFieldList(TreeNode parent, TreeNode currentTreeNode) {
+        List<TreeNode> tableFieldList = new ArrayList<>();
+        String url = "jdbc:mysql://" + currentTreeNode.getConnItem().getHost()
+                + ":" + currentTreeNode.getConnItem().getPort()
+                + "/" + parent.getName();
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection conn = DriverManager.getConnection(url, currentTreeNode.getConnItem().getUsername(), currentTreeNode.getConnItem().getPassword());
+            DatabaseMetaData metaData = conn.getMetaData();
+            ResultSet columns = metaData.getColumns(null, null, currentTreeNode.getName(), null);
+            while (columns.next()) {
+                int dataType = columns.getInt("DATA_TYPE");
+                String columnName = columns.getString("COLUMN_NAME");
+                String columnTypeName = columns.getString("TYPE_NAME");
+                int columnSize = columns.getInt("COLUMN_SIZE");
+                int decimalDigits = columns.getInt("DECIMAL_DIGITS");
+                boolean isNullable = columns.getBoolean("IS_NULLABLE");
+
+                TreeNode tableItem = new TreeNode();
+                tableItem.setName(columnName);
+                tableItem.setTreeNodeType(TreeNodeType.FIELD);
+                tableItem.setIcon(Config.CONN_ICON_TABLE_PATH0);
+                tableItem.setConnItem(currentTreeNode.getConnItem());
+                tableFieldList.add(tableItem);
+            }
+
+            columns.close();
+            conn.close();
+            return tableFieldList;
         } catch (ClassNotFoundException | SQLException e) {
             throw new RuntimeException(e);
         }
