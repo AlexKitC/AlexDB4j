@@ -4,11 +4,13 @@ import io.github.alexkitc.conf.Config;
 import io.github.alexkitc.entity.TreeNode;
 import io.github.alexkitc.entity.enums.TreeNodeType;
 import javafx.scene.control.TreeCell;
+import javafx.scene.control.TreeItem;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -22,6 +24,17 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
     private final ImageView imageView = new ImageView();
     private final Text text = new Text();
 
+    public MyConnItemTreeCell() {
+        setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2) {
+                List<TreeNode> dbList = getTreeItem().getValue().getDbList(getTreeItem().getValue());
+                for (TreeNode db : dbList) {
+                    getTreeItem().getChildren().add(new TreeItem<>(new TreeNode(db.getName(), TreeNodeType.DB, Config.CONN_ICON_DB_PATH0, db.getConnItem())));
+                }
+                getTreeItem().setExpanded(true);
+            }
+        });
+    }
 
     @Override
     protected void updateItem(TreeNode item, boolean empty) {
@@ -37,14 +50,6 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
             HBox hBox = item.getTreeNodeType().equals(TreeNodeType.ROOT) ? new HBox(new ImageView(), text) : new HBox(imageView, text);
             hBox.setSpacing(5);
             setGraphic(hBox);
-
-            // 添加点击事件
-            setOnMouseClicked(event -> {
-                if (event.getClickCount() == 2) {
-                    System.out.println(item);
-                    item.getDbList(item);
-                }
-            });
         }
 
 
