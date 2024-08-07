@@ -9,7 +9,6 @@ import io.github.alexkitc.entity.enums.DbType;
 import io.github.alexkitc.entity.enums.TreeNodeType;
 import io.github.alexkitc.util.$;
 import javafx.beans.property.SimpleObjectProperty;
-import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
@@ -19,7 +18,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -32,6 +31,7 @@ import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -46,8 +46,6 @@ import static io.github.alexkitc.conf.Config.NEW_CONN_ICON_PATH;
  */
 public class HomeController {
 
-    @FXML
-    private SplitPane splitPane;
     // 新建连接按钮
     @FXML
     private Button newConnBtn;
@@ -170,13 +168,17 @@ public class HomeController {
         HBox row2 = new HBox();
         row2.setPrefHeight(32);
         row2.setSpacing(10);
+        // limit输入框
         TextField defaultFetchRowTextField = new TextField();
         defaultFetchRowTextField.setPrefWidth(56);
         defaultFetchRowTextField.setText(String.valueOf(Config.DEFAULT_FETCH_ROW));
+        //orderby输入框
+        TextField orderbyTextField = new TextField();
+
         row2.getChildren().addAll(new Text("WHERE "),
                 new TextField(),
                 new Text("ORDER BY "),
-                new TextField(),
+                orderbyTextField,
                 new Text(" LIMIT "),
                 defaultFetchRowTextField
         );
@@ -236,8 +238,10 @@ public class HomeController {
         List<TreeNode> tableFieldList = treeNode.getTableFieldList(parent, treeNode);
         // 表头
         ObservableList<TableColumn<RowData, ?>> columns = FXCollections.observableArrayList();
+        List<String> colNameList = new ArrayList<>();
         tableFieldList.forEach(col -> {
             String colName = col.getName();
+            colNameList.add(colName);
             TableColumn<RowData, String> column = new TableColumn<>(colName);
             column.setCellValueFactory(field -> {
                 try {
@@ -264,7 +268,22 @@ public class HomeController {
 
         // 表赋值数据
         tableView.setItems(tableDataList);
-        //设置列宽自动调整
 
+        //limit输入框新增回车查询事件
+        defaultFetchRowTextField.setOnKeyPressed(ev -> {
+            if (ev.getCode() == KeyCode.ENTER) {
+                ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
+                treeNode.getTableRowDataList(parent, treeNode, columns, newTableDataList, null, null, Integer.parseInt(defaultFetchRowTextField.getText()));
+                tableView.setItems(newTableDataList);
+            }
+        });
+
+        // orderby输入框监听输入事件
+        orderbyTextField.textProperty().addListener((ob, oldValue, newValue) -> {
+            List<String> optionList = colNameList.stream()
+                    .filter(col -> col.contains(newValue) || col.contains(newValue.toLowerCase()))
+                    .toList();
+            System.out.println(optionList);
+        });
     }
 }
