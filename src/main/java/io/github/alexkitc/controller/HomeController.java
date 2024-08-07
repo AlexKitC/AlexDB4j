@@ -3,10 +3,15 @@ package io.github.alexkitc.controller;
 import io.github.alexkitc.component.MyConnItemTreeCell;
 import io.github.alexkitc.conf.Config;
 import io.github.alexkitc.entity.ConnItem;
+import io.github.alexkitc.entity.RowData;
 import io.github.alexkitc.entity.TreeNode;
 import io.github.alexkitc.entity.enums.DbType;
 import io.github.alexkitc.entity.enums.TreeNodeType;
 import io.github.alexkitc.util.$;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
@@ -14,6 +19,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
@@ -22,6 +28,7 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -39,6 +46,8 @@ import static io.github.alexkitc.conf.Config.NEW_CONN_ICON_PATH;
  */
 public class HomeController {
 
+    @FXML
+    private SplitPane splitPane;
     // 新建连接按钮
     @FXML
     private Button newConnBtn;
@@ -121,7 +130,7 @@ public class HomeController {
     }
 
     // 新建Tab+TabPane容纳表数据，含4部分：1.功能按钮，2.搜索，排序，3.数据tableView，4.执行语句
-    public void addTabPaneOfData(TreeNode treeNode) {
+    public void addTabPaneOfData(TreeNode parent, TreeNode treeNode) {
         // 首次新建
         if (tabPane == null) {
             tabPane = new TabPane();
@@ -175,7 +184,7 @@ public class HomeController {
         row2.setAlignment(Pos.CENTER_LEFT);
 
         // row3
-        TableView tableView = new TableView();
+        TableView<RowData> tableView = new TableView<>();
 
         //row4
         HBox row4 = new HBox();
@@ -223,6 +232,39 @@ public class HomeController {
             mainDataContainer.getChildren().add(tabPane);
         }
 
+        //获得表字段渲染
+        List<TreeNode> tableFieldList = treeNode.getTableFieldList(parent, treeNode);
+        // 表头
+        ObservableList<TableColumn<RowData, ?>> columns = FXCollections.observableArrayList();
+        tableFieldList.forEach(col -> {
+            String colName = col.getName();
+            TableColumn<RowData, String> column = new TableColumn<>(colName);
+            column.setCellValueFactory(field -> {
+                try {
+                    // 获取 RowData 对象
+                    RowData rowData = field.getValue();
+
+                    // 使用反射获取 Map 中的值
+                    Method method = RowData.class.getMethod("get", String.class);
+                    Object value = method.invoke(rowData, colName);
+                    return new SimpleObjectProperty<>(value == null ? null : value.toString());
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            });
+            columns.add(column);
+        });
+        // 设置表列
+        tableView.getColumns().setAll(columns);
+
+        // 表数据
+        ObservableList<RowData> tableDataList = FXCollections.observableArrayList();
+        //获得表数据
+        treeNode.getTableRowDataList(parent, treeNode, columns, tableDataList);
+
+        // 表赋值数据
+        tableView.setItems(tableDataList);
+        //设置列宽自动调整
 
     }
 }

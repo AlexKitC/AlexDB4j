@@ -2,6 +2,8 @@ package io.github.alexkitc.entity;
 
 import io.github.alexkitc.conf.Config;
 import io.github.alexkitc.entity.enums.TreeNodeType;
+import javafx.collections.ObservableList;
+import javafx.scene.control.TableColumn;
 import javafx.scene.control.TreeItem;
 import lombok.Data;
 import lombok.experimental.Accessors;
@@ -171,8 +173,10 @@ public class TreeNode {
     }
 
     // 查询表数据
-    public List<TreeNode> getTableDataList(TreeNode parent, TreeNode currentTreeNode) {
-        List<TreeNode> dbList = new ArrayList<>();
+    public ObservableList<RowData> getTableRowDataList(TreeNode parent,
+                                             TreeNode currentTreeNode,
+                                             ObservableList<TableColumn<RowData, ?>> columns,
+                                             ObservableList<RowData> rowList) {
         String url = "jdbc:mysql://" + currentTreeNode.getConnItem().getHost()
                 + ":" + currentTreeNode.getConnItem().getPort()
                 + "/" + parent.getName()
@@ -183,17 +187,19 @@ public class TreeNode {
             Statement stmt = conn.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM " + currentTreeNode.getName());
             while (rs.next()) {
-                TreeNode dbItem = new TreeNode();
-                dbItem.setName(rs.getString(1));
-                dbItem.setTreeNodeType(TreeNodeType.DB);
-                dbItem.setIcon(Config.CONN_ICON_DB_PATH0);
-                dbItem.setConnItem(currentTreeNode.getConnItem());
-                dbList.add(dbItem);
+                RowData rowData = new RowData();
+                for (TableColumn<RowData, ?> column : columns) {
+                    String columnName = column.getText();
+                    Object value = rs.getObject(columnName);
+                    rowData.put(columnName, value);
+                }
+                rowList.add(rowData);
             }
+
             rs.close();
             stmt.close();
             conn.close();
-            return dbList;
+            return rowList;
         } catch (ClassNotFoundException | SQLException e) {
             throw new RuntimeException(e);
         }
