@@ -26,7 +26,7 @@ public class TreeNode {
     // 节点的显示名
     private String name;
 
-    // 节点为Field类型时的字段类型+长度
+    // field 类型+长度
     private String typeAndLength;
 
     // 节点类型
@@ -56,14 +56,6 @@ public class TreeNode {
         this.connItem = connItem;
     }
 
-    public TreeNode(String name, TreeNodeType treeNodeType, String icon, ConnItem connItem, String typeAndLength) {
-        this.name = name;
-        this.treeNodeType = treeNodeType;
-        this.icon = icon;
-        this.connItem = connItem;
-        this.typeAndLength = null;
-    }
-
     public TreeNode(String name, String icon) {
         this.name = name;
         this.icon = icon;
@@ -74,11 +66,20 @@ public class TreeNode {
         this.icon = icon;
     }
 
+    public TreeNode(String name, TreeNodeType treeNodeType, String icon, ConnItem connItem, String typeAndLength) {
+        this.name = name;
+        this.typeAndLength = typeAndLength;
+        this.treeNodeType = treeNodeType;
+        this.icon = icon;
+        this.connItem = connItem;
+    }
+
     // 获取数据库列表
     public List<TreeNode> getDbList(TreeNode currentTreeNode) {
         List<TreeNode> dbList = new ArrayList<>();
         String url = "jdbc:mysql://" + currentTreeNode.getConnItem().getHost()
-                + ":" + currentTreeNode.getConnItem().getPort();
+                + ":" + currentTreeNode.getConnItem().getPort()
+                + "?useSSL=false";
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection conn = DriverManager.getConnection(url, currentTreeNode.getConnItem().getUsername(), currentTreeNode.getConnItem().getPassword());
@@ -106,7 +107,8 @@ public class TreeNode {
         List<TreeNode> tableList = new ArrayList<>();
         String url = "jdbc:mysql://" + currentTreeNode.getConnItem().getHost()
                 + ":" + currentTreeNode.getConnItem().getPort()
-                + "/" + currentTreeNode.getName();
+                + "/" + currentTreeNode.getName()
+                + "?useSSL=false";
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection conn = DriverManager.getConnection(url, currentTreeNode.getConnItem().getUsername(), currentTreeNode.getConnItem().getPassword());
@@ -135,7 +137,8 @@ public class TreeNode {
         List<TreeNode> tableFieldList = new ArrayList<>();
         String url = "jdbc:mysql://" + currentTreeNode.getConnItem().getHost()
                 + ":" + currentTreeNode.getConnItem().getPort()
-                + "/" + parent.getName();
+                + "/" + parent.getName()
+                + "?useSSL=false";
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection conn = DriverManager.getConnection(url, currentTreeNode.getConnItem().getUsername(), currentTreeNode.getConnItem().getPassword());
@@ -148,19 +151,49 @@ public class TreeNode {
                 int columnSize = columns.getInt("COLUMN_SIZE");
                 int decimalDigits = columns.getInt("DECIMAL_DIGITS");
                 boolean isNullable = columns.getBoolean("IS_NULLABLE");
+//                String memo = columns.getString("COLUMN_COMMENT");
 
-                TreeNode tableFieldItem = new TreeNode();
-                tableFieldItem.setName(columnName);
-                tableFieldItem.setTypeAndLength(columnTypeName + "(" + columnSize + ")");
-                tableFieldItem.setTreeNodeType(TreeNodeType.FIELD);
-                tableFieldItem.setIcon(Config.CONN_ICON_TABLE_PATH0);
-                tableFieldItem.setConnItem(currentTreeNode.getConnItem());
-                tableFieldList.add(tableFieldItem);
+                TreeNode tableItem = new TreeNode();
+                tableItem.setName(columnName);
+                tableItem.setTypeAndLength(columnTypeName + "("  + columnSize + ")");
+                tableItem.setTreeNodeType(TreeNodeType.FIELD);
+                tableItem.setIcon(Config.CONN_ICON_FIELD_PATH0);
+                tableItem.setConnItem(currentTreeNode.getConnItem());
+                tableFieldList.add(tableItem);
             }
 
             columns.close();
             conn.close();
             return tableFieldList;
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    // 查询表数据
+    public List<TreeNode> getTableDataList(TreeNode parent, TreeNode currentTreeNode) {
+        List<TreeNode> dbList = new ArrayList<>();
+        String url = "jdbc:mysql://" + currentTreeNode.getConnItem().getHost()
+                + ":" + currentTreeNode.getConnItem().getPort()
+                + "/" + parent.getName()
+                + "?useSSL=false";
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection conn = DriverManager.getConnection(url, currentTreeNode.getConnItem().getUsername(), currentTreeNode.getConnItem().getPassword());
+            Statement stmt = conn.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM " + currentTreeNode.getName());
+            while (rs.next()) {
+                TreeNode dbItem = new TreeNode();
+                dbItem.setName(rs.getString(1));
+                dbItem.setTreeNodeType(TreeNodeType.DB);
+                dbItem.setIcon(Config.CONN_ICON_DB_PATH0);
+                dbItem.setConnItem(currentTreeNode.getConnItem());
+                dbList.add(dbItem);
+            }
+            rs.close();
+            stmt.close();
+            conn.close();
+            return dbList;
         } catch (ClassNotFoundException | SQLException e) {
             throw new RuntimeException(e);
         }

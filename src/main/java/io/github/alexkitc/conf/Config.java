@@ -44,6 +44,9 @@ public class Config {
     public static final String CONN_ICON_TABLE_PATH0 = "/icon/table0.png";
     public static final String CONN_ICON_TABLE_PATH1 = "/icon/table1.png";
 
+    // 连接树-field图标
+    public static final String CONN_ICON_FIELD_PATH0 = "/icon/field.png";
+
     // 连接树-mysql图标
     public static final String CONN_ICON_DB_MYSQL_PATH0 = "/icon/mysql0.png";
     public static final String CONN_ICON_DB_MYSQL_PATH1 = "/icon/mysql1.png";

@@ -1,8 +1,11 @@
 package io.github.alexkitc.component;
 
+import io.github.alexkitc.App;
 import io.github.alexkitc.conf.Config;
+import io.github.alexkitc.controller.HomeController;
 import io.github.alexkitc.entity.TreeNode;
 import io.github.alexkitc.entity.enums.TreeNodeType;
+import javafx.geometry.Pos;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
 import javafx.scene.image.Image;
@@ -23,14 +26,14 @@ import java.util.stream.Collectors;
  */
 public class MyConnItemTreeCell extends TreeCell<TreeNode> {
 
-    // TreeItem图标
+    // 图标
     private final ImageView imageView = new ImageView();
-    // TreeItem 文本
+    // 名称
     private final Text text = new Text();
-    // TreeItem Field类型的类型+长度
-    private final Text description = new Text();
-    // TreeItem Field类型的备注
-    private final Text memo = new Text();
+    // 字段类型+长度
+    private final Text typeAndLength = new Text();
+
+
 
     // 添加连接的点击事件
     public MyConnItemTreeCell() {
@@ -73,9 +76,11 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
                                 .toList();
                         for (TreeNode tableField : tableFieldList) {
                             if (!historyTableFieldList.contains(tableField.getName())) {
-                                getTreeItem().getChildren().add(new TreeItem<>(new TreeNode(tableField.getName(), TreeNodeType.FIELD, Config.CONN_ICON_TABLE_PATH0, tableField.getConnItem(), tableField.getTypeAndLength())));
+                                getTreeItem().getChildren().add(new TreeItem<>(new TreeNode(tableField.getName(), TreeNodeType.FIELD, Config.CONN_ICON_FIELD_PATH0, tableField.getConnItem(), tableField.getTypeAndLength())));
                             }
                         }
+                        // 新建TabPane容器展示数据
+                        App.homeControllerInstance.addTabPaneOfData(getTreeItem().getValue().getName(), getTreeItem().getValue().getConnItem().getHost());
                         break;
                     default:
                         break;
@@ -107,12 +112,17 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
                     hBox = new HBox(imageView, text);
                     break;
                 case FIELD:
-                    description.setText(getTreeItem().getValue().getTypeAndLength());
-                    hBox = new HBox(text, description);
+                    typeAndLength.setText(item.getTypeAndLength());
+                    typeAndLength.setStyle("-fx-font-size: 10px;-fx-fill: #707070;");
+                    hBox = new HBox(imageView, text, typeAndLength);
+
                 default:
                     break;
 
             }
+            //居中
+            hBox.setAlignment(Pos.CENTER_LEFT);
+            // 图标和nama边距
             hBox.setSpacing(5);
             setGraphic(hBox);
         }

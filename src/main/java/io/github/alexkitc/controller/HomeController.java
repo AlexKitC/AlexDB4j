@@ -12,9 +12,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -35,11 +37,19 @@ import static io.github.alexkitc.conf.Config.NEW_CONN_ICON_PATH;
  */
 public class HomeController {
 
+    // 新建连接按钮
     @FXML
     private Button newConnBtn;
+    // 连接树
     @FXML
     private TreeView<TreeNode> treeView;
+    // 数据容器
+    @FXML
+    private AnchorPane mainDataContainer;
 
+    private TabPane tabPane;
+
+    // 初始化
     @FXML
     private void initialize() {
         // 1.按钮图标
@@ -106,5 +116,74 @@ public class HomeController {
 
         //设置TreeCell工厂
         treeView.setCellFactory(item -> new MyConnItemTreeCell());
+    }
+
+    // 新建Tab+TabPane容纳表数据，含4部分：1.功能按钮，2.搜索，排序，3.数据tableView，4.执行语句
+    public void addTabPaneOfData(String tableName, String host) {
+        // 首次新建
+        if (tabPane == null) {
+            tabPane = new TabPane();
+        }
+        Tab tab = new Tab(tableName + " " + host);
+
+        //content内容：需要包含4部分
+        VBox vBox = new VBox();
+
+        // row1
+        HBox row1 = new HBox();
+        row1.setPrefHeight(32);
+        row1.setSpacing(10);
+        row1.getChildren().addAll(new Button("占位btn1"), new Button("占位btn2"));
+
+        // row2
+        HBox row2 = new HBox();
+        row2.setPrefHeight(32);
+        row2.setSpacing(10);
+        row2.getChildren().addAll(new TextField(), new TextField());
+
+        // row3
+        TableView tableView = new TableView();
+
+        //row4
+        HBox row4 = new HBox();
+        row4.setPrefHeight(32);
+        row4.getChildren().add(new Text("select * from xxx"));
+
+        vBox.getChildren().addAll(row1, row2, tableView, row4);
+
+        // TabPane锚点
+        AnchorPane.setTopAnchor(tabPane, 0.0);
+        AnchorPane.setBottomAnchor(tabPane, 0.0);
+        AnchorPane.setLeftAnchor(tabPane, 0.0);
+        AnchorPane.setRightAnchor(tabPane, 0.0);
+
+        // VBox锚点
+        AnchorPane.setTopAnchor(vBox, 0.0);
+        AnchorPane.setBottomAnchor(vBox, 0.0);
+        AnchorPane.setLeftAnchor(vBox, 0.0);
+        AnchorPane.setRightAnchor(vBox, 0.0);
+
+        // TableView锚点
+        AnchorPane.setTopAnchor(tableView, 0.0);
+        AnchorPane.setBottomAnchor(tableView, 0.0);
+        AnchorPane.setLeftAnchor(tableView, 0.0);
+        AnchorPane.setRightAnchor(tableView, 0.0);
+
+        //VBox尽可能的占据空间伸缩
+        VBox.setVgrow(tableView, Priority.ALWAYS);
+
+        // 不允许相同tab反复添加到容器内
+        List<String> tabNameList = tabPane.getTabs()
+                .stream()
+                .map(Tab::getText)
+                .toList();
+        if (!tabNameList.contains(tab.getText())) {
+            tab.setContent(vBox);
+            tabPane.getTabs().add(tab);
+        }
+
+        if (!mainDataContainer.getChildren().contains(tabPane)) {
+            mainDataContainer.getChildren().add(tabPane);
+        }
     }
 }
