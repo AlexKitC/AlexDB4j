@@ -138,6 +138,7 @@ public class HomeController {
         if (tabPane == null) {
             tabPane = new TabPane();
         }
+        System.gc();
         List<String> tabNameList = tabPane.getTabs()
                 .stream()
                 .map(Tab::getText)
@@ -239,6 +240,7 @@ public class HomeController {
             mainDataContainer.getChildren().add(tabPane);
         }
 
+        tableView.setFixedCellSize(25);
         //获得表字段渲染
         List<TreeNode> tableFieldList = treeNode.getTableFieldList(parent, treeNode);
         // 表头
@@ -248,6 +250,7 @@ public class HomeController {
             String colName = col.getName();
             colNameList.add(colName);
             TableColumn<RowData, String> column = new TableColumn<>(colName);
+            column.setMinWidth(Config.DEFAULT_COLUMN_MIN_WIDTH);
             column.setMaxWidth(Config.DEFAULT_COLUMN_MAX_WIDTH);
             // 单元格值工厂
             column.setCellValueFactory(field -> {

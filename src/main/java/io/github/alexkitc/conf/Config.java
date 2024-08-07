@@ -52,7 +52,8 @@ public class Config {
     public static final String CONN_ICON_DB_MYSQL_PATH1 = "/icon/mysql1.png";
 
     // 默认读取的数据行
-    public static final Integer DEFAULT_FETCH_ROW = 1000;
-    //默认column最大宽度
-    public static final Double DEFAULT_COLUMN_MAX_WIDTH = 128.0;
+    public static final Integer DEFAULT_FETCH_ROW = 500;
+    //默认column最小/大宽度
+    public static final Double DEFAULT_COLUMN_MIN_WIDTH = 96.0;
+    public static final Double DEFAULT_COLUMN_MAX_WIDTH = 168.0;
 }
