@@ -11,20 +11,24 @@ import io.github.alexkitc.util.$;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import javafx.util.Callback;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -243,6 +247,7 @@ public class HomeController {
             String colName = col.getName();
             colNameList.add(colName);
             TableColumn<RowData, String> column = new TableColumn<>(colName);
+            // 单元格值工厂
             column.setCellValueFactory(field -> {
                 try {
                     // 获取 RowData 对象
@@ -256,6 +261,9 @@ public class HomeController {
                     throw new RuntimeException(e);
                 }
             });
+
+            // 列单元格工厂
+            column.setCellFactory(colCellFactory(35));
             columns.add(column);
         });
         // 设置表列
@@ -285,5 +293,54 @@ public class HomeController {
                     .toList();
             System.out.println(optionList);
         });
+    }
+
+    private Callback<TableColumn<RowData, String>, TableCell<RowData, String>> colCellFactory(int maxWidth) {
+        return new Callback<>() {
+            @Override
+            public TableCell<RowData, String> call(TableColumn<RowData, String> rowDataStringTableColumn) {
+                return new TableCell<RowData, String>() {
+                    private Tooltip tooltip;
+                    @Override
+                    protected void updateItem(String item, boolean empty) {
+                        super.updateItem(item, empty);
+                        if (empty) {
+                            setGraphic(null);
+                            setText(null);
+                        } else {
+                            String truncatedText = truncateText(item, maxWidth);
+                            setText(truncatedText);
+
+                            setOnMouseEntered(event -> showTooltip(item));
+                            setOnMouseExited(event -> hideTooltip());
+                        }
+                    }
+
+                    private String truncateText(String text, int maxWidth) {
+                        if (text != null && text.length() > maxWidth) {
+                            return text.substring(0, maxWidth - 3) + "...";
+                        }
+                        return text;
+                    }
+
+                    // 显示tooltip
+                    private void showTooltip(String text) {
+                        if (tooltip == null) {
+                            tooltip = new Tooltip(text);
+                        }
+                        Bounds bounds = getBoundsInParent(); // 获取单元格在父容器中的边界
+                        double offsetX = 5; // 调整水平偏移量
+                        double offsetY = 5; // 调整垂直偏移量
+                        tooltip.show(getScene().getWindow(), bounds.getMaxX() + offsetX, bounds.getMaxY() + offsetY);
+                    }
+
+                    private void hideTooltip() {
+                        if (tooltip != null) {
+                            tooltip.hide();
+                        }
+                    }
+                };
+            }
+        };
     }
 }
