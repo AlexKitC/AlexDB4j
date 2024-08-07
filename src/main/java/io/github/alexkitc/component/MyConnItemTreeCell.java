@@ -80,7 +80,7 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
                             }
                         }
                         // 新建TabPane容器展示数据
-                        App.homeControllerInstance.addTabPaneOfData(getTreeItem().getValue().getName(), getTreeItem().getValue().getConnItem().getHost());
+                        App.homeControllerInstance.addTabPaneOfData(getTreeItem().getValue());
                         break;
                     default:
                         break;

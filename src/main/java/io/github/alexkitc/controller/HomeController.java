@@ -9,6 +9,8 @@ import io.github.alexkitc.entity.enums.TreeNodeType;
 import io.github.alexkitc.util.$;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
@@ -119,12 +121,12 @@ public class HomeController {
     }
 
     // 新建Tab+TabPane容纳表数据，含4部分：1.功能按钮，2.搜索，排序，3.数据tableView，4.执行语句
-    public void addTabPaneOfData(String tableName, String host) {
+    public void addTabPaneOfData(TreeNode treeNode) {
         // 首次新建
         if (tabPane == null) {
             tabPane = new TabPane();
         }
-        Tab tab = new Tab(tableName + " " + host);
+        Tab tab = new Tab(treeNode.getName() + " " + treeNode.getConnItem().getHost());
 
         //content内容：需要包含4部分
         VBox vBox = new VBox();
@@ -134,12 +136,19 @@ public class HomeController {
         row1.setPrefHeight(32);
         row1.setSpacing(10);
         row1.getChildren().addAll(new Button("占位btn1"), new Button("占位btn2"));
+        row1.setAlignment(Pos.CENTER_LEFT);
+        row1.setPadding(new Insets(0, 0, 0, 6));
 
         // row2
         HBox row2 = new HBox();
         row2.setPrefHeight(32);
         row2.setSpacing(10);
-        row2.getChildren().addAll(new TextField(), new TextField());
+        row2.getChildren().addAll(new Text("WHERE "),
+                new TextField(),
+                new Text("ORDER BY "),
+                new TextField());
+        row2.setPadding(new Insets(0, 0, 0, 6));
+        row2.setAlignment(Pos.CENTER_LEFT);
 
         // row3
         TableView tableView = new TableView();
@@ -148,6 +157,8 @@ public class HomeController {
         HBox row4 = new HBox();
         row4.setPrefHeight(32);
         row4.getChildren().add(new Text("select * from xxx"));
+        row4.setPadding(new Insets(0, 0, 0, 6));
+        row4.setAlignment(Pos.CENTER_LEFT);
 
         vBox.getChildren().addAll(row1, row2, tableView, row4);
 
@@ -172,6 +183,9 @@ public class HomeController {
         //VBox尽可能的占据空间伸缩
         VBox.setVgrow(tableView, Priority.ALWAYS);
 
+        // 存储当前连接信息已备后续展开逻辑
+        tab.setUserData(treeNode);
+
         // 不允许相同tab反复添加到容器内
         List<String> tabNameList = tabPane.getTabs()
                 .stream()
@@ -185,5 +199,7 @@ public class HomeController {
         if (!mainDataContainer.getChildren().contains(tabPane)) {
             mainDataContainer.getChildren().add(tabPane);
         }
+
+
     }
 }
