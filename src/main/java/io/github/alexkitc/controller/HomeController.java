@@ -20,6 +20,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
@@ -247,6 +248,7 @@ public class HomeController {
             String colName = col.getName();
             colNameList.add(colName);
             TableColumn<RowData, String> column = new TableColumn<>(colName);
+            column.setMaxWidth(Config.DEFAULT_COLUMN_MAX_WIDTH);
             // 单元格值工厂
             column.setCellValueFactory(field -> {
                 try {
@@ -263,7 +265,7 @@ public class HomeController {
             });
 
             // 列单元格工厂
-            column.setCellFactory(colCellFactory(35));
+//            column.setCellFactory(colCellFactory(35));
             columns.add(column);
         });
         // 设置表列
@@ -293,6 +295,11 @@ public class HomeController {
                     .toList();
             System.out.println(optionList);
         });
+
+        tab.setOnClosed(ev -> {
+            tab.setContent(null);
+            System.gc();
+        });
     }
 
     private Callback<TableColumn<RowData, String>, TableCell<RowData, String>> colCellFactory(int maxWidth) {
@@ -300,7 +307,6 @@ public class HomeController {
             @Override
             public TableCell<RowData, String> call(TableColumn<RowData, String> rowDataStringTableColumn) {
                 return new TableCell<RowData, String>() {
-                    private Tooltip tooltip;
                     @Override
                     protected void updateItem(String item, boolean empty) {
                         super.updateItem(item, empty);
@@ -310,9 +316,6 @@ public class HomeController {
                         } else {
                             String truncatedText = truncateText(item, maxWidth);
                             setText(truncatedText);
-
-                            setOnMouseEntered(event -> showTooltip(item));
-                            setOnMouseExited(event -> hideTooltip());
                         }
                     }
 
@@ -323,22 +326,6 @@ public class HomeController {
                         return text;
                     }
 
-                    // 显示tooltip
-                    private void showTooltip(String text) {
-                        if (tooltip == null) {
-                            tooltip = new Tooltip(text);
-                        }
-                        Bounds bounds = getBoundsInParent(); // 获取单元格在父容器中的边界
-                        double offsetX = 5; // 调整水平偏移量
-                        double offsetY = 5; // 调整垂直偏移量
-                        tooltip.show(getScene().getWindow(), bounds.getMaxX() + offsetX, bounds.getMaxY() + offsetY);
-                    }
-
-                    private void hideTooltip() {
-                        if (tooltip != null) {
-                            tooltip.hide();
-                        }
-                    }
                 };
             }
         };

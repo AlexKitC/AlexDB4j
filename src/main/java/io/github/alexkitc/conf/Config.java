@@ -53,4 +53,6 @@ public class Config {
 
     // 默认读取的数据行
     public static final Integer DEFAULT_FETCH_ROW = 1000;
+    //默认column最大宽度
+    public static final Double DEFAULT_COLUMN_MAX_WIDTH = 128.0;
 }
