@@ -1,5 +1,6 @@
 package io.github.alexkitc.controller;
 
+import io.github.alexkitc.App;
 import io.github.alexkitc.entity.ConnItem;
 import io.github.alexkitc.entity.enums.DbType;
 import io.github.alexkitc.util.$;
@@ -172,6 +173,7 @@ public class NewConnController {
                     connItem.getPassword()).getBytes());
 
             NewConnStage.close();
+            App.homeControllerInstance.refreshTreeView();
             //刷新TreeView
         } catch (IOException e) {
             System.out.println(e.getMessage());

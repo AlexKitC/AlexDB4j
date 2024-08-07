@@ -132,6 +132,12 @@ public class HomeController {
         treeView.setCellFactory(item -> new MyConnItemTreeCell());
     }
 
+    // 新建连接后刷新TreeView
+    public void refreshTreeView() {
+        List<ConnItem> connItemList = readConnItemList();
+        initTree(connItemList);
+    }
+
     // 新建Tab+TabPane容纳表数据，含4部分：1.功能按钮，2.搜索，排序，3.数据tableView，4.执行语句
     public void addTabPaneOfData(TreeNode parent, TreeNode treeNode) {
         // 首次新建
