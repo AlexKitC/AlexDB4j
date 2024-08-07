@@ -1,5 +1,6 @@
 package io.github.alexkitc.entity;
 
+import com.mysql.cj.util.StringUtils;
 import io.github.alexkitc.conf.Config;
 import io.github.alexkitc.entity.enums.TreeNodeType;
 import javafx.collections.ObservableList;
@@ -11,6 +12,8 @@ import lombok.experimental.Accessors;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * @author alexKitc
@@ -174,9 +177,12 @@ public class TreeNode {
 
     // 查询表数据
     public ObservableList<RowData> getTableRowDataList(TreeNode parent,
-                                             TreeNode currentTreeNode,
-                                             ObservableList<TableColumn<RowData, ?>> columns,
-                                             ObservableList<RowData> rowList) {
+                                                       TreeNode currentTreeNode,
+                                                       ObservableList<TableColumn<RowData, ?>> columns,
+                                                       ObservableList<RowData> rowList,
+                                                       List<Map<String, String>> conditionList,
+                                                       String orderby,
+                                                       Integer limitRows) {
         String url = "jdbc:mysql://" + currentTreeNode.getConnItem().getHost()
                 + ":" + currentTreeNode.getConnItem().getPort()
                 + "/" + parent.getName()
@@ -185,7 +191,18 @@ public class TreeNode {
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection conn = DriverManager.getConnection(url, currentTreeNode.getConnItem().getUsername(), currentTreeNode.getConnItem().getPassword());
             Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM " + currentTreeNode.getName());
+            String sql = "SELECT * FROM " + currentTreeNode.getName();
+            if (!Objects.isNull(conditionList) && !conditionList.isEmpty()) {
+
+            }
+            if (!Objects.isNull(orderby)) {
+                sql += " ORDER BY ";
+            }
+            if (Objects.nonNull(limitRows)) {
+                sql += " LIMIT " + limitRows;
+            }
+            System.out.println(sql);
+            ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()) {
                 RowData rowData = new RowData();
                 for (TableColumn<RowData, ?> column : columns) {

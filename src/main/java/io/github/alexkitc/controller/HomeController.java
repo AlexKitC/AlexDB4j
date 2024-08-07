@@ -260,7 +260,7 @@ public class HomeController {
         // 表数据
         ObservableList<RowData> tableDataList = FXCollections.observableArrayList();
         //获得表数据
-        treeNode.getTableRowDataList(parent, treeNode, columns, tableDataList);
+        treeNode.getTableRowDataList(parent, treeNode, columns, tableDataList, null, null, Integer.parseInt(defaultFetchRowTextField.getText()));
 
         // 表赋值数据
         tableView.setItems(tableDataList);

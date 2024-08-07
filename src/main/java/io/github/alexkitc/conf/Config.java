@@ -17,9 +17,9 @@ public class Config {
     // 新建连接stage标题
     public static final String APP_NEW_CONN_TITLE = "新建连接";
     // app初始width
-    public static final int APP_WIDTH = 960;
+    public static final int APP_WIDTH = 1400;
     // app初始height
-    public static final int APP_HEIGHT = 640;
+    public static final int APP_HEIGHT = 900;
     // app内图标尺寸
     public static final int ICON_SIZE = 18;
     // 配置项分隔符
