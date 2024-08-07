@@ -84,7 +84,7 @@ public class TreeNode {
         List<TreeNode> dbList = new ArrayList<>();
         String url = "jdbc:mysql://" + currentTreeNode.getConnItem().getHost()
                 + ":" + currentTreeNode.getConnItem().getPort()
-                + "?useSSL=false";
+                + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection conn = DriverManager.getConnection(url, currentTreeNode.getConnItem().getUsername(), currentTreeNode.getConnItem().getPassword());
@@ -113,7 +113,7 @@ public class TreeNode {
         String url = "jdbc:mysql://" + currentTreeNode.getConnItem().getHost()
                 + ":" + currentTreeNode.getConnItem().getPort()
                 + "/" + currentTreeNode.getName()
-                + "?useSSL=false";
+                + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection conn = DriverManager.getConnection(url, currentTreeNode.getConnItem().getUsername(), currentTreeNode.getConnItem().getPassword());
@@ -143,7 +143,7 @@ public class TreeNode {
         String url = "jdbc:mysql://" + currentTreeNode.getConnItem().getHost()
                 + ":" + currentTreeNode.getConnItem().getPort()
                 + "/" + parent.getName()
-                + "?useSSL=false";
+                + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection conn = DriverManager.getConnection(url, currentTreeNode.getConnItem().getUsername(), currentTreeNode.getConnItem().getPassword());
@@ -186,7 +186,7 @@ public class TreeNode {
         String url = "jdbc:mysql://" + currentTreeNode.getConnItem().getHost()
                 + ":" + currentTreeNode.getConnItem().getPort()
                 + "/" + parent.getName()
-                + "?useSSL=false";
+                + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
         try {
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection conn = DriverManager.getConnection(url, currentTreeNode.getConnItem().getUsername(), currentTreeNode.getConnItem().getPassword());
