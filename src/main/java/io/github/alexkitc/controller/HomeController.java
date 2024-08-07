@@ -126,7 +126,25 @@ public class HomeController {
         if (tabPane == null) {
             tabPane = new TabPane();
         }
-        Tab tab = new Tab(treeNode.getName() + " " + treeNode.getConnItem().getHost());
+        List<String> tabNameList = tabPane.getTabs()
+                .stream()
+                .map(Tab::getText)
+                .toList();
+        String tabName = treeNode.getName() + " " + treeNode.getConnItem().getHost();
+        Tab tab;
+
+        //首次打开新标签
+        if (!tabNameList.contains(tabName)) {
+            tab = new Tab(tabName);
+        } else {
+            //已存在标签直接获得焦点
+            tab = tabPane.getTabs()
+                    .stream()
+                    .filter(t -> t.getText().equals(tabName))
+                    .limit(1)
+                    .toList()
+                    .getFirst();
+        }
 
         //content内容：需要包含4部分
         VBox vBox = new VBox();
@@ -143,10 +161,16 @@ public class HomeController {
         HBox row2 = new HBox();
         row2.setPrefHeight(32);
         row2.setSpacing(10);
+        TextField defaultFetchRowTextField = new TextField();
+        defaultFetchRowTextField.setPrefWidth(56);
+        defaultFetchRowTextField.setText(String.valueOf(Config.DEFAULT_FETCH_ROW));
         row2.getChildren().addAll(new Text("WHERE "),
                 new TextField(),
                 new Text("ORDER BY "),
-                new TextField());
+                new TextField(),
+                new Text(" LIMIT "),
+                defaultFetchRowTextField
+        );
         row2.setPadding(new Insets(0, 0, 0, 6));
         row2.setAlignment(Pos.CENTER_LEFT);
 
@@ -187,14 +211,13 @@ public class HomeController {
         tab.setUserData(treeNode);
 
         // 不允许相同tab反复添加到容器内
-        List<String> tabNameList = tabPane.getTabs()
-                .stream()
-                .map(Tab::getText)
-                .toList();
         if (!tabNameList.contains(tab.getText())) {
             tab.setContent(vBox);
             tabPane.getTabs().add(tab);
         }
+
+        // 获得焦点
+        tabPane.getSelectionModel().select(tab);
 
         if (!mainDataContainer.getChildren().contains(tabPane)) {
             mainDataContainer.getChildren().add(tabPane);

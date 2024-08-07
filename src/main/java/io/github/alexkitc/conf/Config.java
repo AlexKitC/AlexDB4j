@@ -17,9 +17,9 @@ public class Config {
     // 新建连接stage标题
     public static final String APP_NEW_CONN_TITLE = "新建连接";
     // app初始width
-    public static final int APP_WIDTH = 960;
+    public static final int APP_WIDTH = 1600;
     // app初始height
-    public static final int APP_HEIGHT = 640;
+    public static final int APP_HEIGHT = 900;
     // app内图标尺寸
     public static final int ICON_SIZE = 18;
     // 配置项分隔符
@@ -50,4 +50,7 @@ public class Config {
     // 连接树-mysql图标
     public static final String CONN_ICON_DB_MYSQL_PATH0 = "/icon/mysql0.png";
     public static final String CONN_ICON_DB_MYSQL_PATH1 = "/icon/mysql1.png";
+
+    // 默认读取的数据行
+    public static final Integer DEFAULT_FETCH_ROW = 1000;
 }
