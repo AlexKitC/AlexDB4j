@@ -22,6 +22,7 @@ public class Config {
     public static final int APP_HEIGHT = 900;
     // app内图标尺寸
     public static final int ICON_SIZE = 18;
+    public static final int ICON_SMALL_SIZE = 12;
     // 配置项分隔符
     public static final String CONN_SPLIT_FLAG = "###";
     // 配置文件后缀
@@ -51,9 +52,22 @@ public class Config {
     public static final String CONN_ICON_DB_MYSQL_PATH0 = "/icon/mysql0.png";
     public static final String CONN_ICON_DB_MYSQL_PATH1 = "/icon/mysql1.png";
 
+    // 分页图标
+    public static final String PAGE_ICON_FIRST = "/icon/page-first.png";
+    public static final String PAGE_ICON_PREV = "/icon/page-prev.png";
+    public static final String PAGE_ICON_NEXT = "/icon/page-next.png";
+    public static final String PAGE_ICON_LAST = "/icon/page-last.png";
+
     // 默认读取的数据行
     public static final Integer DEFAULT_FETCH_ROW = 500;
     //默认column最小/大宽度
     public static final Double DEFAULT_COLUMN_MIN_WIDTH = 96.0;
     public static final Double DEFAULT_COLUMN_MAX_WIDTH = 168.0;
+
+    // tooltip文本
+    public static final String TOOLTIP_NEW_CONN = "新建连接";
+    public static final String TOOLTIP_FIRST_PAGE = "第一页";
+    public static final String TOOLTIP_PREV_PAGE = "上一页";
+    public static final String TOOLTIP_NEXT_PAGE = "下一页";
+    public static final String TOOLTIP_LAST_PAGE = "最后一页";
 }

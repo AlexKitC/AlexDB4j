@@ -11,25 +11,20 @@ import io.github.alexkitc.util.$;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
-import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.TextFieldTableCell;
 import javafx.scene.input.KeyCode;
-import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import javafx.util.Callback;
 
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -40,8 +35,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
-import static io.github.alexkitc.conf.Config.CONN_SPLIT_FLAG;
-import static io.github.alexkitc.conf.Config.NEW_CONN_ICON_PATH;
+import static io.github.alexkitc.conf.Config.*;
 
 /**
  * @author alexKitc
@@ -67,7 +61,7 @@ public class HomeController {
     @FXML
     private void initialize() {
         // 1.按钮图标
-        $.addNewConnButtonIcon(newConnBtn, NEW_CONN_ICON_PATH);
+        $.addButtonIcon(newConnBtn, NEW_CONN_ICON_PATH, ICON_SIZE, TOOLTIP_NEW_CONN);
         // 2.读取已有连接信息
         List<ConnItem> connItemList = readConnItemList();
         // 3.初始化树
@@ -140,6 +134,8 @@ public class HomeController {
 
     // 新建Tab+TabPane容纳表数据，含4部分：1.功能按钮，2.搜索，排序，3.数据tableView，4.执行语句
     public void addTabPaneOfData(TreeNode parent, TreeNode treeNode) {
+        treeNode.setCurrentPage(1);
+        System.out.println(treeNode.getCurrentPage());
         // 首次新建
         if (tabPane == null) {
             tabPane = new TabPane();
@@ -172,9 +168,22 @@ public class HomeController {
         HBox row1 = new HBox();
         row1.setPrefHeight(32);
         row1.setSpacing(10);
-        row1.getChildren().addAll(new Button("占位btn1"), new Button("占位btn2"));
+
+        // 翻页按钮
+        Button pageFirstBtn = new Button();
+        Button pagePrevBtn = new Button();
+        Button pageNextBtn = new Button();
+        Button pageLastBtn = new Button();
+
+        $.addButtonIcon(pageFirstBtn, PAGE_ICON_FIRST, ICON_SMALL_SIZE, TOOLTIP_FIRST_PAGE);
+        $.addButtonIcon(pagePrevBtn, PAGE_ICON_PREV, ICON_SMALL_SIZE, TOOLTIP_PREV_PAGE);
+        $.addButtonIcon(pageNextBtn, PAGE_ICON_NEXT, ICON_SMALL_SIZE, TOOLTIP_NEXT_PAGE);
+        $.addButtonIcon(pageLastBtn, PAGE_ICON_LAST, ICON_SMALL_SIZE, TOOLTIP_LAST_PAGE);
+        row1.getChildren().addAll(pageFirstBtn, pagePrevBtn, pageNextBtn, pageLastBtn);
         row1.setAlignment(Pos.CENTER_LEFT);
         row1.setPadding(new Insets(0, 0, 0, 6));
+
+
 
         // row2
         HBox row2 = new HBox();
@@ -184,7 +193,7 @@ public class HomeController {
         TextField defaultFetchRowTextField = new TextField();
         defaultFetchRowTextField.setPrefWidth(56);
         defaultFetchRowTextField.setText(String.valueOf(Config.DEFAULT_FETCH_ROW));
-        //orderby输入框
+        //orderBy输入框
         TextField orderbyTextField = new TextField();
 
         row2.getChildren().addAll(new Text("WHERE "),
@@ -273,8 +282,6 @@ public class HomeController {
                 }
             });
 
-            // 列单元格工厂
-//            column.setCellFactory(colCellFactory(35));
             columns.add(column);
         });
         // 设置表列
@@ -297,12 +304,41 @@ public class HomeController {
             }
         });
 
-        // orderby输入框监听输入事件
+        // orderBy输入框监听输入事件
         orderbyTextField.textProperty().addListener((ob, oldValue, newValue) -> {
             List<String> optionList = colNameList.stream()
                     .filter(col -> col.contains(newValue) || col.contains(newValue.toLowerCase()))
                     .toList();
             System.out.println(optionList);
+        });
+
+        // 分页事件
+        pageFirstBtn.setOnAction(ev -> {
+            treeNode.setCurrentPage(1);
+            ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
+            treeNode.triggerPageEvent(parent, treeNode, columns, newTableDataList, Integer.parseInt(defaultFetchRowTextField.getText()));
+            tableView.setItems(newTableDataList);
+        });
+
+        pagePrevBtn.setOnAction(ev -> {
+            treeNode.setCurrentPage(treeNode.getCurrentPage() == 1 ? 1 : treeNode.getCurrentPage() - 1);
+            ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
+            treeNode.triggerPageEvent(parent, treeNode, columns, newTableDataList, Integer.parseInt(defaultFetchRowTextField.getText()));
+            tableView.setItems(newTableDataList);
+        });
+
+        pageNextBtn.setOnAction(ev -> {
+            treeNode.setCurrentPage(treeNode.getCurrentPage() + 1);
+            ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
+            treeNode.triggerPageEvent(parent, treeNode, columns, newTableDataList, Integer.parseInt(defaultFetchRowTextField.getText()));
+            tableView.setItems(newTableDataList);
+        });
+
+        pageLastBtn.setOnAction(ev -> {
+            treeNode.setCurrentPage(1);
+            ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
+            treeNode.triggerPageEvent(parent, treeNode, columns, newTableDataList, Integer.parseInt(defaultFetchRowTextField.getText()));
+            tableView.setItems(newTableDataList);
         });
 
         tab.setOnClosed(ev -> {
@@ -311,32 +347,4 @@ public class HomeController {
         });
     }
 
-    private Callback<TableColumn<RowData, String>, TableCell<RowData, String>> colCellFactory(int maxWidth) {
-        return new Callback<>() {
-            @Override
-            public TableCell<RowData, String> call(TableColumn<RowData, String> rowDataStringTableColumn) {
-                return new TableCell<RowData, String>() {
-                    @Override
-                    protected void updateItem(String item, boolean empty) {
-                        super.updateItem(item, empty);
-                        if (empty) {
-                            setGraphic(null);
-                            setText(null);
-                        } else {
-                            String truncatedText = truncateText(item, maxWidth);
-                            setText(truncatedText);
-                        }
-                    }
-
-                    private String truncateText(String text, int maxWidth) {
-                        if (text != null && text.length() > maxWidth) {
-                            return text.substring(0, maxWidth - 3) + "...";
-                        }
-                        return text;
-                    }
-
-                };
-            }
-        };
-    }
 }

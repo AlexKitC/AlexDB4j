@@ -1,11 +1,9 @@
 package io.github.alexkitc.entity;
 
-import com.mysql.cj.util.StringUtils;
 import io.github.alexkitc.conf.Config;
 import io.github.alexkitc.entity.enums.TreeNodeType;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TableColumn;
-import javafx.scene.control.TreeItem;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -46,7 +44,11 @@ public class TreeNode {
     // 节点的活跃状态（激活状态）
     private boolean active;
 
-    public TreeNode() {}
+    // 当前分页页码
+    private int currentPage;
+
+    public TreeNode() {
+    }
 
     public TreeNode(String name, TreeNodeType treeNodeType, String icon) {
         this.name = name;
@@ -160,7 +162,7 @@ public class TreeNode {
 
                 TreeNode tableItem = new TreeNode();
                 tableItem.setName(columnName);
-                tableItem.setTypeAndLength(columnTypeName + "("  + columnSize + ")");
+                tableItem.setTypeAndLength(columnTypeName + "(" + columnSize + ")");
                 tableItem.setTreeNodeType(TreeNodeType.FIELD);
                 tableItem.setIcon(Config.CONN_ICON_FIELD_PATH0);
                 tableItem.setConnItem(currentTreeNode.getConnItem());
@@ -201,7 +203,46 @@ public class TreeNode {
             if (Objects.nonNull(limitRows)) {
                 sql += " LIMIT " + limitRows;
             }
-            System.out.println(sql);
+
+            ResultSet rs = stmt.executeQuery(sql);
+            while (rs.next()) {
+                RowData rowData = new RowData();
+                for (TableColumn<RowData, ?> column : columns) {
+                    String columnName = column.getText();
+                    Object value = rs.getObject(columnName);
+                    rowData.put(columnName, value);
+                }
+                rowList.add(rowData);
+            }
+
+            rs.close();
+            stmt.close();
+            conn.close();
+            return rowList;
+        } catch (ClassNotFoundException | SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public ObservableList<RowData> triggerPageEvent(TreeNode parent,
+                                                    TreeNode currentTreeNode,
+                                                    ObservableList<TableColumn<RowData, ?>> columns,
+                                                    ObservableList<RowData> rowList,
+                                                    Integer limitRows) {
+        String url = "jdbc:mysql://" + currentTreeNode.getConnItem().getHost()
+                + ":" + currentTreeNode.getConnItem().getPort()
+                + "/" + parent.getName()
+                + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection conn = DriverManager.getConnection(url, currentTreeNode.getConnItem().getUsername(), currentTreeNode.getConnItem().getPassword());
+            Statement stmt = conn.createStatement();
+            String sql = "SELECT * FROM " + currentTreeNode.getName();
+
+            if (Objects.nonNull(limitRows)) {
+                sql += " LIMIT " + String.valueOf((currentTreeNode.getCurrentPage() - 1) * limitRows) + ", " + limitRows;
+            }
+
             ResultSet rs = stmt.executeQuery(sql);
             while (rs.next()) {
                 RowData rowData = new RowData();
