@@ -183,7 +183,7 @@ public class TreeNode {
                                                        TreeNode currentTreeNode,
                                                        ObservableList<TableColumn<RowData, ?>> columns,
                                                        ObservableList<RowData> rowList,
-                                                       List<Map<String, String>> conditionList,
+                                                       String whereCondition,
                                                        String orderby,
                                                        Integer limitRows,
                                                        Text sqlText) {
@@ -196,11 +196,11 @@ public class TreeNode {
             Connection conn = DriverManager.getConnection(url, currentTreeNode.getConnItem().getUsername(), currentTreeNode.getConnItem().getPassword());
             Statement stmt = conn.createStatement();
             String sql = "SELECT * FROM " + currentTreeNode.getName();
-            if (!Objects.isNull(conditionList) && !conditionList.isEmpty()) {
-
+            if (!Objects.isNull(whereCondition) && !whereCondition.trim().isEmpty()) {
+                sql += " WHERE " + whereCondition;
             }
-            if (!Objects.isNull(orderby)) {
-                sql += " ORDER BY ";
+            if (!Objects.isNull(orderby)&& !orderby.trim().isEmpty()) {
+                sql += " ORDER BY " + orderby;
             }
             if (Objects.nonNull(limitRows)) {
                 sql += " LIMIT " + limitRows;
@@ -223,6 +223,7 @@ public class TreeNode {
             conn.close();
             return rowList;
         } catch (ClassNotFoundException | SQLException e) {
+            sqlText.setText(e.getMessage());
             throw new RuntimeException(e);
         }
     }
@@ -231,6 +232,8 @@ public class TreeNode {
                                                     TreeNode currentTreeNode,
                                                     ObservableList<TableColumn<RowData, ?>> columns,
                                                     ObservableList<RowData> rowList,
+                                                    String whereCondition,
+                                                    String orderby,
                                                     Integer limitRows,
                                                     Text sqlText) {
         String url = "jdbc:mysql://" + currentTreeNode.getConnItem().getHost()
@@ -242,6 +245,13 @@ public class TreeNode {
             Connection conn = DriverManager.getConnection(url, currentTreeNode.getConnItem().getUsername(), currentTreeNode.getConnItem().getPassword());
             Statement stmt = conn.createStatement();
             String sql = "SELECT * FROM " + currentTreeNode.getName();
+
+            if (!Objects.isNull(whereCondition) && !whereCondition.trim().isEmpty()) {
+                sql += " WHERE " + whereCondition;
+            }
+            if (!Objects.isNull(orderby)&& !orderby.trim().isEmpty()) {
+                sql += " ORDER BY " + orderby;
+            }
 
             if (Objects.nonNull(limitRows)) {
                 sql += " LIMIT " + String.valueOf((currentTreeNode.getCurrentPage() - 1) * limitRows) + ", " + limitRows;

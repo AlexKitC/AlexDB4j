@@ -135,7 +135,7 @@ public class HomeController {
     // 新建Tab+TabPane容纳表数据，含4部分：1.功能按钮，2.搜索，排序，3.数据tableView，4.执行语句
     public void addTabPaneOfData(TreeNode parent, TreeNode treeNode) {
         treeNode.setCurrentPage(1);
-        System.out.println(treeNode.getCurrentPage());
+
         // 首次新建
         if (tabPane == null) {
             tabPane = new TabPane();
@@ -193,11 +193,14 @@ public class HomeController {
         TextField defaultFetchRowTextField = new TextField();
         defaultFetchRowTextField.setPrefWidth(56);
         defaultFetchRowTextField.setText(String.valueOf(Config.DEFAULT_FETCH_ROW));
-        //orderBy输入框
+        // where输入框
+        TextField whereTextField = new TextField();
+        whereTextField.setPrefWidth(Config.WHERE_CONDITION_TEXT_FIELD_LENGH);
+        // orderBy输入框
         TextField orderbyTextField = new TextField();
 
         row2.getChildren().addAll(new Text("WHERE "),
-                new TextField(),
+                whereTextField,
                 new Text("ORDER BY "),
                 orderbyTextField,
                 new Text(" LIMIT "),
@@ -295,19 +298,51 @@ public class HomeController {
                 treeNode,
                 columns,
                 tableDataList,
-                null,
-                null,
+                whereTextField.getText(),
+                orderbyTextField.getText(),
                 Integer.parseInt(defaultFetchRowTextField.getText()),
                 sqlText);
 
         // 表赋值数据
         tableView.setItems(tableDataList);
 
-        //limit输入框新增回车查询事件
+        //where, orderBy, limit输入框新增回车查询事件
         defaultFetchRowTextField.setOnKeyPressed(ev -> {
             if (ev.getCode() == KeyCode.ENTER) {
                 ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
-                treeNode.getTableRowDataList(parent, treeNode, columns, newTableDataList, null, null, Integer.parseInt(defaultFetchRowTextField.getText()), sqlText);
+                treeNode.getTableRowDataList(parent,
+                        treeNode,
+                        columns,
+                        newTableDataList,
+                        whereTextField.getText(),
+                        orderbyTextField.getText(),
+                        Integer.parseInt(defaultFetchRowTextField.getText()), sqlText);
+                tableView.setItems(newTableDataList);
+            }
+        });
+        whereTextField.setOnKeyPressed(ev -> {
+            if (ev.getCode() == KeyCode.ENTER) {
+                ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
+                treeNode.getTableRowDataList(parent,
+                        treeNode,
+                        columns,
+                        newTableDataList,
+                        whereTextField.getText(),
+                        orderbyTextField.getText(),
+                        Integer.parseInt(defaultFetchRowTextField.getText()), sqlText);
+                tableView.setItems(newTableDataList);
+            }
+        });
+        orderbyTextField.setOnKeyPressed(ev -> {
+            if (ev.getCode() == KeyCode.ENTER) {
+                ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
+                treeNode.getTableRowDataList(parent,
+                        treeNode,
+                        columns,
+                        newTableDataList,
+                        whereTextField.getText(),
+                        orderbyTextField.getText(),
+                        Integer.parseInt(defaultFetchRowTextField.getText()), sqlText);
                 tableView.setItems(newTableDataList);
             }
         });
@@ -324,28 +359,56 @@ public class HomeController {
         pageFirstBtn.setOnAction(ev -> {
             treeNode.setCurrentPage(1);
             ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
-            treeNode.triggerPageEvent(parent, treeNode, columns, newTableDataList, Integer.parseInt(defaultFetchRowTextField.getText()), sqlText);
+            treeNode.triggerPageEvent(parent,
+                    treeNode,
+                    columns,
+                    newTableDataList,
+                    whereTextField.getText(),
+                    orderbyTextField.getText(),
+                    Integer.parseInt(defaultFetchRowTextField.getText()),
+                    sqlText);
             tableView.setItems(newTableDataList);
         });
 
         pagePrevBtn.setOnAction(ev -> {
             treeNode.setCurrentPage(treeNode.getCurrentPage() == 1 ? 1 : treeNode.getCurrentPage() - 1);
             ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
-            treeNode.triggerPageEvent(parent, treeNode, columns, newTableDataList, Integer.parseInt(defaultFetchRowTextField.getText()), sqlText);
+            treeNode.triggerPageEvent(parent,
+                    treeNode,
+                    columns,
+                    newTableDataList,
+                    whereTextField.getText(),
+                    orderbyTextField.getText(),
+                    Integer.parseInt(defaultFetchRowTextField.getText()),
+                    sqlText);
             tableView.setItems(newTableDataList);
         });
 
         pageNextBtn.setOnAction(ev -> {
             treeNode.setCurrentPage(treeNode.getCurrentPage() + 1);
             ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
-            treeNode.triggerPageEvent(parent, treeNode, columns, newTableDataList, Integer.parseInt(defaultFetchRowTextField.getText()), sqlText);
+            treeNode.triggerPageEvent(parent,
+                    treeNode,
+                    columns,
+                    newTableDataList,
+                    whereTextField.getText(),
+                    orderbyTextField.getText(),
+                    Integer.parseInt(defaultFetchRowTextField.getText()),
+                    sqlText);
             tableView.setItems(newTableDataList);
         });
 
         pageLastBtn.setOnAction(ev -> {
             treeNode.setCurrentPage(1);
             ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
-            treeNode.triggerPageEvent(parent, treeNode, columns, newTableDataList, Integer.parseInt(defaultFetchRowTextField.getText()), sqlText);
+            treeNode.triggerPageEvent(parent,
+                    treeNode,
+                    columns,
+                    newTableDataList,
+                    whereTextField.getText(),
+                    orderbyTextField.getText(),
+                    Integer.parseInt(defaultFetchRowTextField.getText()),
+                    sqlText);
             tableView.setItems(newTableDataList);
         });
 

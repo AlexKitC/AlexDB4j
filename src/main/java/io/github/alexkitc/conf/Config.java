@@ -70,4 +70,7 @@ public class Config {
     public static final String TOOLTIP_PREV_PAGE = "上一页";
     public static final String TOOLTIP_NEXT_PAGE = "下一页";
     public static final String TOOLTIP_LAST_PAGE = "最后一页";
+
+    // 条件输入框默认长度
+    public static final Double WHERE_CONDITION_TEXT_FIELD_LENGH = 320.0;
 }
