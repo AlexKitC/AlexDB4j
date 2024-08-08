@@ -9,11 +9,11 @@ package io.github.alexkitc.conf;
 public class Config {
 
     // app标题
-    public static final String APP_TITLE = "alexDB";
+    public static final String APP_TITLE = "AlexDB4J";
     // app版本
     public static final String APP_VERSION = "0.0.1";
     // app作者
-    public static final String APP_AUTHOR = "alexkitc";
+    public static final String APP_AUTHOR = "李林";
     // 新建连接stage标题
     public static final String APP_NEW_CONN_TITLE = "新建连接";
     // app初始width
@@ -31,6 +31,8 @@ public class Config {
     public static final String FXML_HOME_FILE_PATH = "/fxml/home.fxml";
     // css路径
     public static final String APP_CSS_PATH = "/css/app.css";
+    // app图标
+    public static final String APP_AUTHOR_ICO = "/icon/head.png";
     // 新建连接 按钮 图标
     public static final String NEW_CONN_ICON_PATH = "/icon/new-conn.png";
     // 连接树-连接图标

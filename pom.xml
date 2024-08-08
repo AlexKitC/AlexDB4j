@@ -88,7 +88,7 @@
                         <configuration>
                             <mainClass>io.github.alexkitc.Bootstrap</mainClass>
                             <bundleJre>true</bundleJre>
-                            <vmArgs>-Xmx1024m</vmArgs>
+                            <vmArgs>-Xmx2048m</vmArgs>
 
                         </configuration>
                     </execution>

@@ -6,6 +6,7 @@ import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -35,7 +36,8 @@ public class App extends Application {
 
             stage.setScene(new Scene(root, Config.APP_WIDTH, Config.APP_HEIGHT));
 
-            stage.setTitle(Config.APP_TITLE);
+            stage.setTitle(Config.APP_TITLE + " Designed By " + Config.APP_AUTHOR + " APP Version: " + Config.APP_VERSION);
+            stage.getIcons().add(new Image(Config.APP_AUTHOR_ICO));
             stage.show();
         } catch (IOException e) {
             throw new RuntimeException(e);
