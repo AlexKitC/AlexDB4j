@@ -460,6 +460,7 @@ public class HomeController {
     // 双击行数据传入列名和值绘制一个编辑面板
     private void drawTableViewDataEditPane(Map<String, String> dataMap, TreeNode treeNode) {
         Stage tableViewDataEditStage = new Stage();
+
         tableViewDataEditStage.setTitle(Config.EDIT_TABLE_VIEW_DATA_TITLE + " " + treeNode.getConnItem().getHost() + " " + treeNode.getName());
 
         VBox vBox = new VBox();
@@ -473,7 +474,14 @@ public class HomeController {
         tableViewDataEditPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
         tableViewDataEditPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
 
-        tableViewDataEditStage.setScene(new Scene(tableViewDataEditPane));
+        Scene tableViewDataEditScene = new Scene(tableViewDataEditPane);
+
+        tableViewDataEditScene.setOnKeyPressed(ev -> {
+            if (ev.getCode() == KeyCode.ESCAPE) {
+                tableViewDataEditStage.close();
+            }
+        });
+        tableViewDataEditStage.setScene(tableViewDataEditScene);
         tableViewDataEditStage.getIcons().add(new Image(APP_AUTHOR_ICO));
 
         for (Map.Entry<String, String> entry : dataMap.entrySet()) {
