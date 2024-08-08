@@ -20,6 +20,7 @@ import javafx.geometry.Pos;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
@@ -96,6 +97,7 @@ public class HomeController {
         newConnStage.setTitle(Config.APP_NEW_CONN_TITLE);
         newConnStage.setScene(new Scene(newRoot));
         NewConnController.NewConnStage = newConnStage;
+        newConnStage.getIcons().add(new Image(APP_AUTHOR_ICO));
         newConnStage.show();
     }
 
@@ -159,7 +161,7 @@ public class HomeController {
                 .stream()
                 .map(Tab::getText)
                 .toList();
-        String tabName = treeNode.getName() + " " + treeNode.getConnItem().getHost();
+        String tabName = parent.getName() + " " + treeNode.getName() + " " + treeNode.getConnItem().getHost();
         Tab tab;
 
         //首次打开新标签
@@ -174,6 +176,9 @@ public class HomeController {
                     .toList()
                     .getFirst();
         }
+
+        // 存储当前连接信息已备后续展开逻辑
+        tab.setUserData(treeNode);
 
         //content内容：需要包含4部分
         VBox vBox = new VBox();
@@ -196,7 +201,6 @@ public class HomeController {
         row1.getChildren().addAll(pageFirstBtn, pagePrevBtn, pageNextBtn, pageLastBtn);
         row1.setAlignment(Pos.CENTER_LEFT);
         row1.setPadding(new Insets(0, 0, 0, 6));
-
 
 
         // row2
@@ -256,9 +260,6 @@ public class HomeController {
 
         //VBox尽可能的占据空间伸缩
         VBox.setVgrow(tableView, Priority.ALWAYS);
-
-        // 存储当前连接信息已备后续展开逻辑
-        tab.setUserData(treeNode);
 
         // 不允许相同tab反复添加到容器内
         if (!tabNameList.contains(tab.getText())) {
@@ -448,7 +449,11 @@ public class HomeController {
         });
     }
 
+    // 内存监控任务
     private void startMemoryTick() {
+        //基本的ToolTips
+        memoryProgressbar.setTooltip(new Tooltip("当前数据库工具内存监控"));
+
         Task<Double> memoryTask = new Task<>() {
             @Override
             protected Double call() throws Exception {

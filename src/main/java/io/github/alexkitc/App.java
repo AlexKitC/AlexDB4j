@@ -36,7 +36,7 @@ public class App extends Application {
 
             stage.setScene(new Scene(root, Config.APP_WIDTH, Config.APP_HEIGHT));
 
-            stage.setTitle(Config.APP_TITLE + " Designed By " + Config.APP_AUTHOR + " APP Version: " + Config.APP_VERSION);
+            stage.setTitle(Config.APP_TITLE + " Designed By " + Config.APP_AUTHOR + " App Version: " + Config.APP_VERSION);
             stage.getIcons().add(new Image(Config.APP_AUTHOR_ICO));
             stage.show();
         } catch (IOException e) {
