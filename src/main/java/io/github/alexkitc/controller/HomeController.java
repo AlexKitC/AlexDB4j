@@ -380,6 +380,9 @@ public class HomeController {
                     Integer.parseInt(defaultFetchRowTextField.getText()),
                     sqlText);
             tableView.setItems(newTableDataList);
+            pageFirstBtn.setDisable(true);
+            pagePrevBtn.setDisable(true);
+            pageNextBtn.setDisable(newTableDataList.size() < Integer.parseInt(defaultFetchRowTextField.getText()));
         });
 
         pagePrevBtn.setOnAction(ev -> {
@@ -394,6 +397,9 @@ public class HomeController {
                     Integer.parseInt(defaultFetchRowTextField.getText()),
                     sqlText);
             tableView.setItems(newTableDataList);
+            pagePrevBtn.setDisable(treeNode.getCurrentPage() == 1);
+            pageFirstBtn.setDisable(treeNode.getCurrentPage() == 1);
+            pageNextBtn.setDisable(newTableDataList.size() < Integer.parseInt(defaultFetchRowTextField.getText()));
         });
 
         pageNextBtn.setOnAction(ev -> {
@@ -407,22 +413,32 @@ public class HomeController {
                     orderbyTextField.getText(),
                     Integer.parseInt(defaultFetchRowTextField.getText()),
                     sqlText);
+            pageNextBtn.setDisable(newTableDataList.size() < Integer.parseInt(defaultFetchRowTextField.getText()));
+            pagePrevBtn.setDisable(false);
+            pageFirstBtn.setDisable(false);
             tableView.setItems(newTableDataList);
         });
-
-        pageLastBtn.setOnAction(ev -> {
-            treeNode.setCurrentPage(1);
-            ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
-            treeNode.triggerPageEvent(parent,
-                    treeNode,
-                    columns,
-                    newTableDataList,
-                    whereTextField.getText(),
-                    orderbyTextField.getText(),
-                    Integer.parseInt(defaultFetchRowTextField.getText()),
-                    sqlText);
-            tableView.setItems(newTableDataList);
-        });
+        pageLastBtn.setDisable(true);
+        pageFirstBtn.setDisable(true);
+        pagePrevBtn.setDisable(true);
+        if (tableDataList.size() < Integer.parseInt(defaultFetchRowTextField.getText())) {
+            pageNextBtn.setDisable(true);
+        } else {
+            pagePrevBtn.setDisable(true);
+        }
+//        pageLastBtn.setOnAction(ev -> {
+//            treeNode.setCurrentPage(1);
+//            ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
+//            treeNode.triggerPageEvent(parent,
+//                    treeNode,
+//                    columns,
+//                    newTableDataList,
+//                    whereTextField.getText(),
+//                    orderbyTextField.getText(),
+//                    Integer.parseInt(defaultFetchRowTextField.getText()),
+//                    sqlText);
+//            tableView.setItems(newTableDataList);
+//        });
 
         tab.setOnClosed(ev -> {
             tab.setContent(null);
