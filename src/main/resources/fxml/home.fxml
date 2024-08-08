@@ -34,16 +34,20 @@
                         </SplitPane>
                         <HBox prefHeight="32.0" prefWidth="200.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0">
                      <children>
-                        <HBox prefHeight="32.0" prefWidth="414.0" />
-                        <HBox prefHeight="32.0" prefWidth="687.0" />
-                        <HBox fx:id="bottomRightHBox" alignment="CENTER_RIGHT" prefHeight="32.0" prefWidth="235.0">
+                        <HBox prefHeight="32.0" HBox.hgrow="ALWAYS" />
+                        <HBox prefHeight="32.0" HBox.hgrow="ALWAYS" />
+                        <HBox fx:id="bottomRightHBox" alignment="CENTER_RIGHT" nodeOrientation="LEFT_TO_RIGHT" prefHeight="32.0" HBox.hgrow="ALWAYS">
                            <children>
+                              <Text fx:id="memoryInfo" strokeType="OUTSIDE" strokeWidth="0.0" text="内存：(已使用/已申请)" />
                               <Text fx:id="memoryDetailText" strokeType="OUTSIDE" strokeWidth="0.0" text="Text">
                                  <HBox.margin>
                                     <Insets left="10.0" right="6.0" />
                                  </HBox.margin>
                               </Text>
-                              <ProgressBar fx:id="memoryProgressbar" prefWidth="150.0" progress="0.0" />
+                              <ProgressBar fx:id="memoryProgressbar" prefWidth="150.0" progress="0.0">
+                                 <padding>
+                                    <Insets right="6.0" />
+                                 </padding></ProgressBar>
                            </children>
                            <opaqueInsets>
                               <Insets />
