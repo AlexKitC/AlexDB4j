@@ -4,6 +4,7 @@ import io.github.alexkitc.conf.Config;
 import io.github.alexkitc.entity.enums.TreeNodeType;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TableColumn;
+import javafx.scene.text.Text;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -184,7 +185,8 @@ public class TreeNode {
                                                        ObservableList<RowData> rowList,
                                                        List<Map<String, String>> conditionList,
                                                        String orderby,
-                                                       Integer limitRows) {
+                                                       Integer limitRows,
+                                                       Text sqlText) {
         String url = "jdbc:mysql://" + currentTreeNode.getConnItem().getHost()
                 + ":" + currentTreeNode.getConnItem().getPort()
                 + "/" + parent.getName()
@@ -205,6 +207,7 @@ public class TreeNode {
             }
 
             ResultSet rs = stmt.executeQuery(sql);
+            sqlText.setText(sql);
             while (rs.next()) {
                 RowData rowData = new RowData();
                 for (TableColumn<RowData, ?> column : columns) {
@@ -228,7 +231,8 @@ public class TreeNode {
                                                     TreeNode currentTreeNode,
                                                     ObservableList<TableColumn<RowData, ?>> columns,
                                                     ObservableList<RowData> rowList,
-                                                    Integer limitRows) {
+                                                    Integer limitRows,
+                                                    Text sqlText) {
         String url = "jdbc:mysql://" + currentTreeNode.getConnItem().getHost()
                 + ":" + currentTreeNode.getConnItem().getPort()
                 + "/" + parent.getName()
@@ -244,6 +248,7 @@ public class TreeNode {
             }
 
             ResultSet rs = stmt.executeQuery(sql);
+            sqlText.setText(sql);
             while (rs.next()) {
                 RowData rowData = new RowData();
                 for (TableColumn<RowData, ?> column : columns) {

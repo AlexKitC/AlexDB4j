@@ -212,7 +212,8 @@ public class HomeController {
         //row4
         HBox row4 = new HBox();
         row4.setPrefHeight(32);
-        row4.getChildren().add(new Text("select * from xxx"));
+        Text sqlText = new Text();
+        row4.getChildren().add(sqlText);
         row4.setPadding(new Insets(0, 0, 0, 6));
         row4.setAlignment(Pos.CENTER_LEFT);
 
@@ -290,7 +291,14 @@ public class HomeController {
         // 表数据
         ObservableList<RowData> tableDataList = FXCollections.observableArrayList();
         //获得表数据
-        treeNode.getTableRowDataList(parent, treeNode, columns, tableDataList, null, null, Integer.parseInt(defaultFetchRowTextField.getText()));
+        treeNode.getTableRowDataList(parent,
+                treeNode,
+                columns,
+                tableDataList,
+                null,
+                null,
+                Integer.parseInt(defaultFetchRowTextField.getText()),
+                sqlText);
 
         // 表赋值数据
         tableView.setItems(tableDataList);
@@ -299,7 +307,7 @@ public class HomeController {
         defaultFetchRowTextField.setOnKeyPressed(ev -> {
             if (ev.getCode() == KeyCode.ENTER) {
                 ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
-                treeNode.getTableRowDataList(parent, treeNode, columns, newTableDataList, null, null, Integer.parseInt(defaultFetchRowTextField.getText()));
+                treeNode.getTableRowDataList(parent, treeNode, columns, newTableDataList, null, null, Integer.parseInt(defaultFetchRowTextField.getText()), sqlText);
                 tableView.setItems(newTableDataList);
             }
         });
@@ -316,28 +324,28 @@ public class HomeController {
         pageFirstBtn.setOnAction(ev -> {
             treeNode.setCurrentPage(1);
             ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
-            treeNode.triggerPageEvent(parent, treeNode, columns, newTableDataList, Integer.parseInt(defaultFetchRowTextField.getText()));
+            treeNode.triggerPageEvent(parent, treeNode, columns, newTableDataList, Integer.parseInt(defaultFetchRowTextField.getText()), sqlText);
             tableView.setItems(newTableDataList);
         });
 
         pagePrevBtn.setOnAction(ev -> {
             treeNode.setCurrentPage(treeNode.getCurrentPage() == 1 ? 1 : treeNode.getCurrentPage() - 1);
             ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
-            treeNode.triggerPageEvent(parent, treeNode, columns, newTableDataList, Integer.parseInt(defaultFetchRowTextField.getText()));
+            treeNode.triggerPageEvent(parent, treeNode, columns, newTableDataList, Integer.parseInt(defaultFetchRowTextField.getText()), sqlText);
             tableView.setItems(newTableDataList);
         });
 
         pageNextBtn.setOnAction(ev -> {
             treeNode.setCurrentPage(treeNode.getCurrentPage() + 1);
             ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
-            treeNode.triggerPageEvent(parent, treeNode, columns, newTableDataList, Integer.parseInt(defaultFetchRowTextField.getText()));
+            treeNode.triggerPageEvent(parent, treeNode, columns, newTableDataList, Integer.parseInt(defaultFetchRowTextField.getText()), sqlText);
             tableView.setItems(newTableDataList);
         });
 
         pageLastBtn.setOnAction(ev -> {
             treeNode.setCurrentPage(1);
             ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
-            treeNode.triggerPageEvent(parent, treeNode, columns, newTableDataList, Integer.parseInt(defaultFetchRowTextField.getText()));
+            treeNode.triggerPageEvent(parent, treeNode, columns, newTableDataList, Integer.parseInt(defaultFetchRowTextField.getText()), sqlText);
             tableView.setItems(newTableDataList);
         });
 
