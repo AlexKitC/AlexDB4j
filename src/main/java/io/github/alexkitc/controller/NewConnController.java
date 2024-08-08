@@ -1,6 +1,7 @@
 package io.github.alexkitc.controller;
 
 import io.github.alexkitc.App;
+import io.github.alexkitc.conf.Config;
 import io.github.alexkitc.entity.ConnItem;
 import io.github.alexkitc.entity.enums.DbType;
 import io.github.alexkitc.util.$;
@@ -164,12 +165,17 @@ public class NewConnController {
                 Files.createFile(filePath);
             }
 
-            Files.write(filePath, String.format("%s###%s###%s###%s###%s###%s",
+            Files.write(filePath, String.format("%s%s%s%s%s%s%s%s%s%s%s",
                     connItem.getName(),
+                    Config.CONN_SPLIT_FLAG,
                     connItem.getHost(),
+                    Config.CONN_SPLIT_FLAG,
                     connItem.getPort(),
+                    Config.CONN_SPLIT_FLAG,
                     connItem.getDbType(),
+                    Config.CONN_SPLIT_FLAG,
                     connItem.getUsername(),
+                    Config.CONN_SPLIT_FLAG,
                     connItem.getPassword()).getBytes());
 
             NewConnStage.close();
