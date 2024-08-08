@@ -505,7 +505,7 @@ public class HomeController {
     // 内存监控任务
     private void startMemoryTick() {
         //基本的ToolTips
-        memoryProgressbar.setTooltip(new Tooltip("当前数据库工具内存监控"));
+        memoryProgressbar.setTooltip(new Tooltip("当前堆+非堆已使用/已申请内存"));
 
         Task<Double> memoryTask = new Task<>() {
             @Override

@@ -11,7 +11,6 @@ import lombok.experimental.Accessors;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -30,8 +29,11 @@ public class TreeNode {
     // 节点的显示名
     private String name;
 
-    // field 类型+长度
+    // 当类型为field 类型+长度
     private String typeAndLength;
+
+    //当类型为table 存储表数据count
+    private Integer tableViewRowCount;
 
     // 节点类型
     private TreeNodeType treeNodeType;
@@ -199,7 +201,7 @@ public class TreeNode {
             if (!Objects.isNull(whereCondition) && !whereCondition.trim().isEmpty()) {
                 sql += " WHERE " + whereCondition;
             }
-            if (!Objects.isNull(orderby)&& !orderby.trim().isEmpty()) {
+            if (!Objects.isNull(orderby) && !orderby.trim().isEmpty()) {
                 sql += " ORDER BY " + orderby;
             }
             if (Objects.nonNull(limitRows)) {
@@ -228,6 +230,55 @@ public class TreeNode {
         }
     }
 
+    // 获取当前表数据count值
+    public void getTableRowCount(TreeNode parent,
+                                 TreeNode currentTreeNode,
+                                 ObservableList<TableColumn<RowData, ?>> columns,
+                                 ObservableList<RowData> rowList,
+                                 String whereCondition,
+                                 String orderby,
+                                 Integer limitRows,
+                                 Text sqlText) {
+        String url = "jdbc:mysql://" + currentTreeNode.getConnItem().getHost()
+                + ":" + currentTreeNode.getConnItem().getPort()
+                + "/" + parent.getName()
+                + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
+        try {
+            Class.forName("com.mysql.cj.jdbc.Driver");
+            Connection conn = DriverManager.getConnection(url, currentTreeNode.getConnItem().getUsername(), currentTreeNode.getConnItem().getPassword());
+            Statement stmt = conn.createStatement();
+            String sql = "SELECT COUNT(*) FROM " + currentTreeNode.getName();
+            if (!Objects.isNull(whereCondition) && !whereCondition.trim().isEmpty()) {
+                sql += " WHERE " + whereCondition;
+            }
+            if (!Objects.isNull(orderby) && !orderby.trim().isEmpty()) {
+                sql += " ORDER BY " + orderby;
+            }
+            if (Objects.nonNull(limitRows)) {
+                sql += " LIMIT " + limitRows;
+            }
+
+            ResultSet rs = stmt.executeQuery(sql);
+
+            while (rs.next()) {
+                RowData rowData = new RowData();
+                for (TableColumn<RowData, ?> column : columns) {
+                    String columnName = column.getText();
+                    Object value = rs.getObject(columnName);
+                    rowData.put(columnName, value);
+                }
+                rowList.add(rowData);
+            }
+
+            rs.close();
+            stmt.close();
+            conn.close();
+        } catch (ClassNotFoundException | SQLException e) {
+            sqlText.setText(e.getMessage());
+            throw new RuntimeException(e);
+        }
+    }
+
     public ObservableList<RowData> triggerPageEvent(TreeNode parent,
                                                     TreeNode currentTreeNode,
                                                     ObservableList<TableColumn<RowData, ?>> columns,
@@ -249,7 +300,7 @@ public class TreeNode {
             if (!Objects.isNull(whereCondition) && !whereCondition.trim().isEmpty()) {
                 sql += " WHERE " + whereCondition;
             }
-            if (!Objects.isNull(orderby)&& !orderby.trim().isEmpty()) {
+            if (!Objects.isNull(orderby) && !orderby.trim().isEmpty()) {
                 sql += " ORDER BY " + orderby;
             }
 
