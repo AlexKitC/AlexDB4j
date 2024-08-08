@@ -151,7 +151,7 @@ public class TreeNode {
             Class.forName("com.mysql.cj.jdbc.Driver");
             Connection conn = DriverManager.getConnection(url, currentTreeNode.getConnItem().getUsername(), currentTreeNode.getConnItem().getPassword());
             DatabaseMetaData metaData = conn.getMetaData();
-            ResultSet columns = metaData.getColumns(null, null, currentTreeNode.getName(), null);
+            ResultSet columns = metaData.getColumns(parent.getName(), parent.getName(), currentTreeNode.getName(), null);
             while (columns.next()) {
                 int dataType = columns.getInt("DATA_TYPE");
                 String columnName = columns.getString("COLUMN_NAME");
