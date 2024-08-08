@@ -37,9 +37,7 @@ import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 import static io.github.alexkitc.conf.Config.*;
 
@@ -429,24 +427,71 @@ public class HomeController {
         } else {
             pagePrevBtn.setDisable(true);
         }
-//        pageLastBtn.setOnAction(ev -> {
-//            treeNode.setCurrentPage(1);
-//            ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
-//            treeNode.triggerPageEvent(parent,
-//                    treeNode,
-//                    columns,
-//                    newTableDataList,
-//                    whereTextField.getText(),
-//                    orderbyTextField.getText(),
-//                    Integer.parseInt(defaultFetchRowTextField.getText()),
-//                    sqlText);
-//            tableView.setItems(newTableDataList);
-//        });
+//
+        // 表数据行双击事件
+        tableView.setOnMouseClicked(event -> {
+            if (event.getClickCount() == 2) {
+                // 获取选中的行
+                RowData selectedStudent = tableView.getSelectionModel().getSelectedItem();
+                Map<String, String> dataMap = new LinkedHashMap<>();
+                if (selectedStudent != null) {
+                    // 获取所有列
+                    for (TableColumn<RowData, ?> column : tableView.getColumns()) {
+                        // 获取列名
+                        String columnName = column.getText();
+
+                        // 获取数据值
+                        Object value = column.getCellData(selectedStudent);
+
+                        dataMap.put(columnName, String.valueOf(value));
+                    }
+                }
+
+                drawTableViewDataEditPane(dataMap, treeNode);
+            }
+        });
 
         tab.setOnClosed(ev -> {
             tab.setContent(null);
             System.gc();
         });
+    }
+
+    // 双击行数据传入列名和值绘制一个编辑面板
+    private void drawTableViewDataEditPane(Map<String, String> dataMap, TreeNode treeNode) {
+        Stage tableViewDataEditStage = new Stage();
+        tableViewDataEditStage.setTitle(Config.EDIT_TABLE_VIEW_DATA_TITLE + " " + treeNode.getConnItem().getHost() + " " + treeNode.getName());
+
+        VBox vBox = new VBox();
+        vBox.setSpacing(10);
+        vBox.setPadding(new Insets(10));
+
+        ScrollPane tableViewDataEditPane = new ScrollPane(vBox);
+        tableViewDataEditPane.setFitToWidth(true);
+        tableViewDataEditPane.setPrefWidth(APP_DATA_EDIT_WIDTH);
+        tableViewDataEditPane.setPrefHeight(APP_DATA_EDIT_HEIGHT);
+        tableViewDataEditPane.setHbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
+        tableViewDataEditPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
+
+        tableViewDataEditStage.setScene(new Scene(tableViewDataEditPane));
+        tableViewDataEditStage.getIcons().add(new Image(APP_AUTHOR_ICO));
+
+        for (Map.Entry<String, String> entry : dataMap.entrySet()) {
+            HBox hBox = new HBox();
+            VBox.setVgrow(hBox, Priority.ALWAYS);
+            Label columnName = new Label(entry.getKey());
+            columnName.setMinWidth(200.0);
+            columnName.setPadding(new Insets(0, 0, 0, 5));
+            hBox.getChildren().add(columnName);
+
+            TextField textField = new TextField(entry.getValue());
+            textField.setPrefWidth(APP_DATA_EDIT_WIDTH - 250);
+            hBox.getChildren().add(textField);
+
+            hBox.setAlignment(Pos.CENTER_LEFT);
+            vBox.getChildren().add(hBox);
+        }
+        tableViewDataEditStage.show();
     }
 
     // 内存监控任务

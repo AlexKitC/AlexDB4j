@@ -16,10 +16,16 @@ public class Config {
     public static final String APP_AUTHOR = "李林";
     // 新建连接stage标题
     public static final String APP_NEW_CONN_TITLE = "新建连接";
+    // 编辑数据stage标题
+    public static final String EDIT_TABLE_VIEW_DATA_TITLE = "编辑表数据";
     // app初始width
     public static final int APP_WIDTH = 1400;
     // app初始height
     public static final int APP_HEIGHT = 900;
+    // app数据编辑窗口宽高度
+    public static final int APP_DATA_EDIT_WIDTH = 1366;
+    public static final int APP_DATA_EDIT_HEIGHT = 768;
+
     // app内图标尺寸
     public static final int ICON_SIZE = 18;
     public static final int ICON_SMALL_SIZE = 12;
