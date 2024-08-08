@@ -8,9 +8,11 @@ import io.github.alexkitc.entity.TreeNode;
 import io.github.alexkitc.entity.enums.DbType;
 import io.github.alexkitc.entity.enums.TreeNodeType;
 import io.github.alexkitc.util.$;
+import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
@@ -447,26 +449,31 @@ public class HomeController {
     }
 
     private void startMemoryTick() {
-        Thread.ofVirtual().start(() -> {
-            while (true) {
-                MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
+        Task<Double> memoryTask = new Task<>() {
+            @Override
+            protected Double call() throws Exception {
+                while (!isCancelled()) {
+                    MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
 
-                MemoryUsage heapMemoryUsage = memoryMXBean.getHeapMemoryUsage();
-                MemoryUsage nonHeapMemoryUsage = memoryMXBean.getNonHeapMemoryUsage();
+                    MemoryUsage heapMemoryUsage = memoryMXBean.getHeapMemoryUsage();
+                    MemoryUsage nonHeapMemoryUsage = memoryMXBean.getNonHeapMemoryUsage();
 
-                long totalUsed = heapMemoryUsage.getUsed() / 1024 / 1024 + nonHeapMemoryUsage.getUsed() / 1024 / 1024;
-                long totalCommited = heapMemoryUsage.getCommitted() / 1024 / 1024 + nonHeapMemoryUsage.getCommitted() / 1024 / 1024;
-                memoryProgressbar.setProgress((double) totalUsed /totalCommited);
-                memoryDetailText.setText(totalUsed + "/" + totalCommited + "MB");
+                    long totalUsed = heapMemoryUsage.getUsed() / 1024 / 1024 + nonHeapMemoryUsage.getUsed() / 1024 / 1024;
+                    long totalCommited = heapMemoryUsage.getCommitted() / 1024 / 1024 + nonHeapMemoryUsage.getCommitted() / 1024 / 1024;
 
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
+                    // 使用 Platform.runLater 来更新 UI
+                    Platform.runLater(() -> {
+                        memoryProgressbar.setProgress((double) totalUsed / totalCommited);
+                        memoryDetailText.setText(totalUsed + "/" + totalCommited + "MB");
+                    });
+                    Thread.sleep(2000); // Sleep for 2 seconds
                 }
+                return null;
             }
+        };
 
-        });
+        // 启动 Task
+        Thread.ofVirtual().start(memoryTask);
     }
 
 }
