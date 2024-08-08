@@ -27,6 +27,9 @@ import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import java.io.IOException;
+import java.lang.management.ManagementFactory;
+import java.lang.management.MemoryMXBean;
+import java.lang.management.MemoryUsage;
 import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -55,6 +58,12 @@ public class HomeController {
     @FXML
     private AnchorPane mainDataContainer;
 
+    // 底部最右边的内存指示器
+    @FXML
+    private ProgressBar memoryProgressbar;
+    @FXML
+    private Text memoryDetailText;
+
     private TabPane tabPane;
 
     // 初始化
@@ -66,6 +75,9 @@ public class HomeController {
         List<ConnItem> connItemList = readConnItemList();
         // 3.初始化树
         initTree(connItemList);
+
+        // 4. 开启一个性能监控
+        startMemoryTick();
     }
 
     //新建连接
@@ -415,6 +427,29 @@ public class HomeController {
         tab.setOnClosed(ev -> {
             tab.setContent(null);
             System.gc();
+        });
+    }
+
+    private void startMemoryTick() {
+        Thread.ofVirtual().start(() -> {
+            while (true) {
+                MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
+
+                MemoryUsage heapMemoryUsage = memoryMXBean.getHeapMemoryUsage();
+                MemoryUsage nonHeapMemoryUsage = memoryMXBean.getNonHeapMemoryUsage();
+
+                long totalUsed = heapMemoryUsage.getUsed() / 1024 / 1024 + nonHeapMemoryUsage.getUsed() / 1024 / 1024;
+                long totalCommited = heapMemoryUsage.getCommitted() / 1024 / 1024 + nonHeapMemoryUsage.getCommitted() / 1024 / 1024;
+                memoryProgressbar.setProgress((double) totalUsed /totalCommited);
+                memoryDetailText.setText(totalUsed + "/" + totalCommited + "MB");
+
+                try {
+                    Thread.sleep(2000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
         });
     }
 
