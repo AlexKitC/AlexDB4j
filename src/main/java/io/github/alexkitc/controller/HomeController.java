@@ -1,5 +1,7 @@
 package io.github.alexkitc.controller;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import io.github.alexkitc.component.MyConnItemTreeCell;
 import io.github.alexkitc.conf.Config;
 import io.github.alexkitc.entity.ConnItem;
@@ -492,9 +494,27 @@ public class HomeController {
             columnName.setPadding(new Insets(0, 0, 0, 5));
             hBox.getChildren().add(columnName);
 
-            TextField textField = new TextField(entry.getValue());
-            textField.setPrefWidth(APP_DATA_EDIT_WIDTH - 250);
-            hBox.getChildren().add(textField);
+            if (entry.getValue().startsWith("[") || entry.getValue().startsWith("{")) {
+                Gson gson = new GsonBuilder().setPrettyPrinting().create();
+                try {
+                    String json = gson.toJson(gson.fromJson(entry.getValue(), Map.class));
+                    int initialRowCount = json.split("\n").length;
+                    TextArea textArea = new TextArea((json));
+                    textArea.setPrefRowCount(initialRowCount);
+                    textArea.setPrefWidth(APP_DATA_EDIT_WIDTH - 250);
+                    hBox.getChildren().add(textArea);
+                } catch (Exception e) {
+                    TextField textField = new TextField(entry.getValue());
+                    textField.setPrefWidth(APP_DATA_EDIT_WIDTH - 250);
+                    hBox.getChildren().add(textField);
+                }
+
+
+            } else {
+                TextField textField = new TextField(entry.getValue());
+                textField.setPrefWidth(APP_DATA_EDIT_WIDTH - 250);
+                hBox.getChildren().add(textField);
+            }
 
             hBox.setAlignment(Pos.CENTER_LEFT);
             vBox.getChildren().add(hBox);
