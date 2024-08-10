@@ -7,8 +7,8 @@ import io.github.alexkitc.conf.Config;
 import io.github.alexkitc.entity.ConnItem;
 import io.github.alexkitc.entity.RowData;
 import io.github.alexkitc.entity.TreeNode;
-import io.github.alexkitc.entity.enums.DbType;
-import io.github.alexkitc.entity.enums.TreeNodeType;
+import io.github.alexkitc.entity.enums.DbTypeEnum;
+import io.github.alexkitc.entity.enums.TreeNodeTypeEnum;
 import io.github.alexkitc.util.$;
 import javafx.application.Platform;
 import javafx.beans.property.SimpleObjectProperty;
@@ -117,7 +117,7 @@ public class HomeController {
                                     .setName(strings[0])
                                     .setHost(strings[1])
                                     .setPort(Integer.parseInt(strings[2]))
-                                    .setDbType(DbType.valueOf(strings[3]))
+                                    .setDbTypeEnum(DbTypeEnum.valueOf(strings[3]))
                                     .setUsername(strings.length > 4 ? strings[4] : "")
                                     .setPassword(strings.length > 5 ? strings[5] : "");
                         } catch (IOException e) {
@@ -132,10 +132,10 @@ public class HomeController {
 
     // 3.初始化树根结点
     private void initTree(List<ConnItem> connItemList) {
-        TreeNode treeNode = new TreeNode("连接列表", TreeNodeType.ROOT, Config.CONN_ICON_PATH0);
+        TreeNode treeNode = new TreeNode("连接列表", TreeNodeTypeEnum.ROOT, Config.CONN_ICON_PATH0);
         TreeItem<TreeNode> root = new TreeItem<>(treeNode);
         root.setExpanded(true);
-        connItemList.forEach(item -> root.getChildren().add(new TreeItem<>(new TreeNode(item.getName(), TreeNodeType.CONN, Config.CONN_ICON_DB_MYSQL_PATH0, item))));
+        connItemList.forEach(item -> root.getChildren().add(new TreeItem<>(new TreeNode(item.getName(), TreeNodeTypeEnum.CONN, Config.CONN_ICON_DB_MYSQL_PATH0, item))));
         treeView.setRoot(root);
 
         //设置TreeCell工厂
@@ -148,8 +148,8 @@ public class HomeController {
         initTree(connItemList);
     }
 
-    // 新建Tab+TabPane容纳表数据，含4部分：1.功能按钮，2.搜索，排序，3.数据tableView，4.执行语句
-    public void addTabPaneOfData(TreeNode parent, TreeNode treeNode) {
+    // 新建mysql类型Tab+TabPane容纳表数据，含4部分：1.功能按钮，2.搜索，排序，3.数据tableView，4.执行语句
+    public void addMysqlTabPaneOfData(TreeNode parent, TreeNode treeNode) {
         treeNode.setCurrentPage(1);
 
         // 首次新建

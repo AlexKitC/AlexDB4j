@@ -3,7 +3,7 @@ package io.github.alexkitc.controller;
 import io.github.alexkitc.App;
 import io.github.alexkitc.conf.Config;
 import io.github.alexkitc.entity.ConnItem;
-import io.github.alexkitc.entity.enums.DbType;
+import io.github.alexkitc.entity.enums.DbTypeEnum;
 import io.github.alexkitc.util.$;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -35,7 +35,7 @@ public class NewConnController {
     @FXML
     private TextField port;
     @FXML
-    private ComboBox<DbType> dbType;
+    private ComboBox<DbTypeEnum> dbType;
     @FXML
     private TextField username;
     @FXML
@@ -74,17 +74,17 @@ public class NewConnController {
 
     // 1.初始化db类型选项
     private void initDbTypeCombox() {
-        ObservableList<DbType> dbTypeList = FXCollections.observableArrayList(DbType.values());
+        ObservableList<DbTypeEnum> dbTypeEnumList = FXCollections.observableArrayList(DbTypeEnum.values());
         //设置选项
-        dbType.setItems(dbTypeList);
+        dbType.setItems(dbTypeEnumList);
         //设置默认选中
-        dbType.setValue(DbType.MYSQL);
+        dbType.setValue(DbTypeEnum.MYSQL);
         port.setText("3306");
 
         //切换事件更换默认端口
         dbType.setOnAction(ev -> {
-            DbType currentDbType = dbType.getValue();
-            switch (currentDbType) {
+            DbTypeEnum currentDbTypeEnum = dbType.getValue();
+            switch (currentDbTypeEnum) {
                 case MYSQL:
                     port.setText("3306");
                     break;
@@ -114,7 +114,7 @@ public class NewConnController {
         String connNameString = conName.getText();
         String hostNameString = host.getText();
         String portString = port.getText();
-        DbType dbTypeString = dbType.getValue();
+        DbTypeEnum dbTypeEnumString = dbType.getValue();
         String usernameString = username.getText();
         String passwordString = pwd.getText();
 
@@ -136,13 +136,13 @@ public class NewConnController {
             return null;
         }
 
-        if (!dbTypeString.equals(DbType.REDIS) && $.isEmpty(usernameString)) {
+        if (!dbTypeEnumString.equals(DbTypeEnum.REDIS) && $.isEmpty(usernameString)) {
             username.setPromptText("请输入连接的用户名");
             username.requestFocus();
             return null;
         }
 
-        if (!dbTypeString.equals(DbType.REDIS) && $.isEmpty(passwordString)) {
+        if (!dbTypeEnumString.equals(DbTypeEnum.REDIS) && $.isEmpty(passwordString)) {
             pwd.setPromptText("请输入连接密码");
             pwd.requestFocus();
             return null;
@@ -151,7 +151,7 @@ public class NewConnController {
         return new ConnItem()
                 .setName(connNameString)
                 .setHost(hostNameString)
-                .setDbType(dbTypeString)
+                .setDbTypeEnum(dbTypeEnumString)
                 .setPort(Integer.parseInt(portString))
                 .setUsername(usernameString)
                 .setPassword(passwordString);
@@ -172,7 +172,7 @@ public class NewConnController {
                     Config.CONN_SPLIT_FLAG,
                     connItem.getPort(),
                     Config.CONN_SPLIT_FLAG,
-                    connItem.getDbType(),
+                    connItem.getDbTypeEnum(),
                     Config.CONN_SPLIT_FLAG,
                     connItem.getUsername(),
                     Config.CONN_SPLIT_FLAG,

@@ -3,7 +3,7 @@ package io.github.alexkitc.component;
 import io.github.alexkitc.App;
 import io.github.alexkitc.conf.Config;
 import io.github.alexkitc.entity.TreeNode;
-import io.github.alexkitc.entity.enums.TreeNodeType;
+import io.github.alexkitc.entity.enums.TreeNodeTypeEnum;
 import javafx.geometry.Pos;
 import javafx.scene.control.TreeCell;
 import javafx.scene.control.TreeItem;
@@ -35,12 +35,12 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
     public MyConnItemTreeCell() {
         setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
-                switch (getTreeItem().getValue().getTreeNodeType()) {
+                switch (getTreeItem().getValue().getTreeNodeTypeEnum()) {
                     case ROOT:
                         break;
                     case CONN:
                         // mysql
-                        switch (getTreeItem().getValue().getConnItem().getDbType()) {
+                        switch (getTreeItem().getValue().getConnItem().getDbTypeEnum()) {
                             case MYSQL:
                             case REDIS: {
                                 List<TreeNode> dbList = getTreeItem().getValue().getDbList(getTreeItem().getValue());
@@ -50,7 +50,7 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
                                         .toList();
                                 for (TreeNode db : dbList) {
                                     if (!historyDbList.contains(db.getName())) {
-                                        getTreeItem().getChildren().add(new TreeItem<>(new TreeNode(db.getName(), TreeNodeType.DB, Config.CONN_ICON_DB_PATH0, db.getConnItem())));
+                                        getTreeItem().getChildren().add(new TreeItem<>(new TreeNode(db.getName(), TreeNodeTypeEnum.DB, Config.CONN_ICON_DB_PATH0, db.getConnItem())));
                                     }
                                 }
                                 getTreeItem().setExpanded(true);
@@ -71,7 +71,7 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
                                 .toList();
                         for (TreeNode table : tableList) {
                             if (!historyTableList.contains(table.getName())) {
-                                getTreeItem().getChildren().add(new TreeItem<>(new TreeNode(table.getName(), TreeNodeType.TABLE, Config.CONN_ICON_TABLE_PATH0, table.getConnItem())));
+                                getTreeItem().getChildren().add(new TreeItem<>(new TreeNode(table.getName(), TreeNodeTypeEnum.TABLE, Config.CONN_ICON_TABLE_PATH0, table.getConnItem())));
                             }
                         }
                         getTreeItem().setExpanded(true);
@@ -84,11 +84,23 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
                                 .toList();
                         for (TreeNode tableField : tableFieldList) {
                             if (!historyTableFieldList.contains(tableField.getName())) {
-                                getTreeItem().getChildren().add(new TreeItem<>(new TreeNode(tableField.getName(), TreeNodeType.FIELD, Config.CONN_ICON_FIELD_PATH0, tableField.getConnItem(), tableField.getTypeAndLength())));
+                                getTreeItem().getChildren().add(new TreeItem<>(new TreeNode(tableField.getName(), TreeNodeTypeEnum.FIELD, Config.CONN_ICON_FIELD_PATH0, tableField.getConnItem(), tableField.getTypeAndLength())));
                             }
                         }
                         // 新建TabPane容器展示数据
-                        App.homeControllerInstance.addTabPaneOfData(getTreeItem().getParent().getValue(), getTreeItem().getValue());
+                        switch (getTreeItem().getValue().getConnItem().getDbTypeEnum()) {
+                            case MYSQL:
+                                App.homeControllerInstance.addMysqlTabPaneOfData(getTreeItem().getParent().getValue(), getTreeItem().getValue());
+                                break;
+                                // redis类型需要展开TreeView
+                            case REDIS:
+                                getTreeItem().setExpanded(true);
+                                break;
+                            case MONGODB:
+                                break;
+                            default:
+                                break;
+                        }
                         break;
                     default:
                         break;
@@ -112,7 +124,7 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
             imageView.setFitHeight(Config.ICON_SIZE);
             // 根节点不设置图标
             HBox hBox = null;
-            switch (getTreeItem().getValue().getTreeNodeType()) {
+            switch (getTreeItem().getValue().getTreeNodeTypeEnum()) {
                 case ROOT:
                 case CONN:
                 case DB:

@@ -1,7 +1,8 @@
 package io.github.alexkitc.entity;
 
 import io.github.alexkitc.conf.Config;
-import io.github.alexkitc.entity.enums.TreeNodeType;
+import io.github.alexkitc.entity.enums.RedisKeyTypeEnum;
+import io.github.alexkitc.entity.enums.TreeNodeTypeEnum;
 import io.github.alexkitc.util.$;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TableColumn;
@@ -9,11 +10,12 @@ import javafx.scene.text.Text;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.params.ScanParams;
+import redis.clients.jedis.resps.ScanResult;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -39,7 +41,7 @@ public class TreeNode {
     private Integer tableViewRowCount;
 
     // 节点类型
-    private TreeNodeType treeNodeType;
+    private TreeNodeTypeEnum treeNodeTypeEnum;
 
     // 节点的图标
     private String icon;
@@ -56,18 +58,18 @@ public class TreeNode {
     public TreeNode() {
     }
 
-    public TreeNode(String name, TreeNodeType treeNodeType, String icon) {
+    public TreeNode(String name, TreeNodeTypeEnum treeNodeTypeEnum, String icon) {
         this.name = name;
-        this.treeNodeType = treeNodeType;
+        this.treeNodeTypeEnum = treeNodeTypeEnum;
         this.icon = icon;
     }
 
-    public TreeNode(String name, TreeNodeType treeNodeType, String icon, ConnItem connItem) {
+    public TreeNode(String name, TreeNodeTypeEnum treeNodeTypeEnum, String icon, ConnItem connItem) {
         this.name = name;
-        this.treeNodeType = treeNodeType;
-        switch (treeNodeType) {
+        this.treeNodeTypeEnum = treeNodeTypeEnum;
+        switch (treeNodeTypeEnum) {
             case CONN: {
-                switch (connItem.getDbType()) {
+                switch (connItem.getDbTypeEnum()) {
                     case MYSQL:
                         this.icon = Config.CONN_ICON_DB_MYSQL_PATH0;
                         break;
@@ -103,17 +105,17 @@ public class TreeNode {
         this.icon = icon;
     }
 
-    public TreeNode(String name, TreeNodeType treeNodeType, String icon, ConnItem connItem, String typeAndLength) {
+    public TreeNode(String name, TreeNodeTypeEnum treeNodeTypeEnum, String icon, ConnItem connItem, String typeAndLength) {
         this.name = name;
         this.typeAndLength = typeAndLength;
-        this.treeNodeType = treeNodeType;
+        this.treeNodeTypeEnum = treeNodeTypeEnum;
         this.icon = icon;
         this.connItem = connItem;
     }
 
     // 获取数据库列表
     public List<TreeNode> getDbList(TreeNode currentTreeNode) {
-        switch (currentTreeNode.getConnItem().getDbType()) {
+        switch (currentTreeNode.getConnItem().getDbTypeEnum()) {
             // mysql获取数据库
             case MYSQL: {
                 List<TreeNode> dbList = new ArrayList<>();
@@ -128,7 +130,7 @@ public class TreeNode {
                     while (rs.next()) {
                         TreeNode dbItem = new TreeNode();
                         dbItem.setName(rs.getString(1));
-                        dbItem.setTreeNodeType(TreeNodeType.DB);
+                        dbItem.setTreeNodeTypeEnum(TreeNodeTypeEnum.DB);
                         dbItem.setIcon(Config.CONN_ICON_DB_PATH0);
                         dbItem.setConnItem(currentTreeNode.getConnItem());
                         dbList.add(dbItem);
@@ -144,7 +146,7 @@ public class TreeNode {
             // REDIS获取数据库
             case REDIS: {
                 List<TreeNode> dbList = new ArrayList<>();
-                try (Jedis jedis = new Jedis(currentTreeNode.getConnItem().getHost(),currentTreeNode.getConnItem().getPort())) {
+                try (Jedis jedis = new Jedis(currentTreeNode.getConnItem().getHost(), currentTreeNode.getConnItem().getPort())) {
                     //如果有密码添加密码认证
                     if (!$.isEmpty(currentTreeNode.getConnItem().getPassword())) {
                         jedis.auth(currentTreeNode.getConnItem().getPassword());
@@ -153,7 +155,7 @@ public class TreeNode {
                     int numberOfDatabases = Integer.parseInt(jedis.configGet("databases").get("databases"));
                     for (int dbIndex = 0; dbIndex <= numberOfDatabases; dbIndex++) {
                         TreeNode treeNode = new TreeNode();
-                        treeNode.setTreeNodeType(TreeNodeType.DB);
+                        treeNode.setTreeNodeTypeEnum(TreeNodeTypeEnum.DB);
                         treeNode.setIcon(Config.CONN_ICON_DB_PATH0);
                         treeNode.setConnItem(currentTreeNode.getConnItem());
                         treeNode.setName(String.valueOf(dbIndex));
@@ -172,70 +174,134 @@ public class TreeNode {
 
     // 获取指定数据库table列表
     public List<TreeNode> getTableList(TreeNode currentTreeNode) {
-        List<TreeNode> tableList = new ArrayList<>();
-        String url = "jdbc:mysql://" + currentTreeNode.getConnItem().getHost()
-                + ":" + currentTreeNode.getConnItem().getPort()
-                + "/" + currentTreeNode.getName()
-                + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection conn = DriverManager.getConnection(url, currentTreeNode.getConnItem().getUsername(), currentTreeNode.getConnItem().getPassword());
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(SQL_SHOW_TABLE);
-            while (rs.next()) {
-                TreeNode tableItem = new TreeNode();
-                tableItem.setName(rs.getString(1));
-                tableItem.setTreeNodeType(TreeNodeType.TABLE);
-                tableItem.setIcon(Config.CONN_ICON_TABLE_PATH0);
-                tableItem.setConnItem(currentTreeNode.getConnItem());
-                tableList.add(tableItem);
-            }
+        switch (currentTreeNode.getConnItem().getDbTypeEnum()) {
+            case MYSQL: {
+                List<TreeNode> tableList = new ArrayList<>();
+                String url = "jdbc:mysql://" + currentTreeNode.getConnItem().getHost()
+                        + ":" + currentTreeNode.getConnItem().getPort()
+                        + "/" + currentTreeNode.getName()
+                        + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
+                try {
+                    Class.forName("com.mysql.cj.jdbc.Driver");
+                    Connection conn = DriverManager.getConnection(url, currentTreeNode.getConnItem().getUsername(), currentTreeNode.getConnItem().getPassword());
+                    Statement stmt = conn.createStatement();
+                    ResultSet rs = stmt.executeQuery(SQL_SHOW_TABLE);
+                    while (rs.next()) {
+                        TreeNode tableItem = new TreeNode();
+                        tableItem.setName(rs.getString(1));
+                        tableItem.setTreeNodeTypeEnum(TreeNodeTypeEnum.TABLE);
+                        tableItem.setIcon(Config.CONN_ICON_TABLE_PATH0);
+                        tableItem.setConnItem(currentTreeNode.getConnItem());
+                        tableList.add(tableItem);
+                    }
 
-            rs.close();
-            stmt.close();
-            conn.close();
-            return tableList;
-        } catch (ClassNotFoundException | SQLException e) {
-            throw new RuntimeException(e);
+                    rs.close();
+                    stmt.close();
+                    conn.close();
+
+                    return tableList;
+                } catch (ClassNotFoundException | SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            case REDIS: {
+                List<TreeNode> tableList = new ArrayList<>();
+                for (RedisKeyTypeEnum key : RedisKeyTypeEnum.values()) {
+                    TreeNode tableItem = new TreeNode();
+                    tableItem.setTreeNodeTypeEnum(TreeNodeTypeEnum.TABLE);
+                    tableItem.setIcon(Config.CONN_ICON_TABLE_PATH0);
+                    tableItem.setConnItem(currentTreeNode.getConnItem());
+                    tableItem.setName(String.valueOf(key));
+                    tableList.add(tableItem);
+                }
+
+                return tableList;
+            }
+            default:
+                break;
         }
+        return null;
     }
 
     // 获取指定数据库指定table的field列表
     public List<TreeNode> getTableFieldList(TreeNode parent, TreeNode currentTreeNode) {
-        List<TreeNode> tableFieldList = new ArrayList<>();
-        String url = "jdbc:mysql://" + currentTreeNode.getConnItem().getHost()
-                + ":" + currentTreeNode.getConnItem().getPort()
-                + "/" + parent.getName()
-                + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection conn = DriverManager.getConnection(url, currentTreeNode.getConnItem().getUsername(), currentTreeNode.getConnItem().getPassword());
-            DatabaseMetaData metaData = conn.getMetaData();
-            ResultSet columns = metaData.getColumns(parent.getName(), parent.getName(), currentTreeNode.getName(), null);
-            while (columns.next()) {
-                int dataType = columns.getInt("DATA_TYPE");
-                String columnName = columns.getString("COLUMN_NAME");
-                String columnTypeName = columns.getString("TYPE_NAME");
-                int columnSize = columns.getInt("COLUMN_SIZE");
-                int decimalDigits = columns.getInt("DECIMAL_DIGITS");
-                boolean isNullable = columns.getBoolean("IS_NULLABLE");
+        switch (currentTreeNode.getConnItem().getDbTypeEnum()) {
+            case MYSQL: {
+                List<TreeNode> tableFieldList = new ArrayList<>();
+                String url = "jdbc:mysql://" + currentTreeNode.getConnItem().getHost()
+                        + ":" + currentTreeNode.getConnItem().getPort()
+                        + "/" + parent.getName()
+                        + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
+                try {
+                    Class.forName("com.mysql.cj.jdbc.Driver");
+                    Connection conn = DriverManager.getConnection(url, currentTreeNode.getConnItem().getUsername(), currentTreeNode.getConnItem().getPassword());
+                    DatabaseMetaData metaData = conn.getMetaData();
+                    ResultSet columns = metaData.getColumns(parent.getName(), parent.getName(), currentTreeNode.getName(), null);
+                    while (columns.next()) {
+                        int dataType = columns.getInt("DATA_TYPE");
+                        String columnName = columns.getString("COLUMN_NAME");
+                        String columnTypeName = columns.getString("TYPE_NAME");
+                        int columnSize = columns.getInt("COLUMN_SIZE");
+                        int decimalDigits = columns.getInt("DECIMAL_DIGITS");
+                        boolean isNullable = columns.getBoolean("IS_NULLABLE");
 //                String memo = columns.getString("COLUMN_COMMENT");
 
-                TreeNode tableItem = new TreeNode();
-                tableItem.setName(columnName);
-                tableItem.setTypeAndLength(columnTypeName + "(" + columnSize + ")");
-                tableItem.setTreeNodeType(TreeNodeType.FIELD);
-                tableItem.setIcon(Config.CONN_ICON_FIELD_PATH0);
-                tableItem.setConnItem(currentTreeNode.getConnItem());
-                tableFieldList.add(tableItem);
-            }
+                        TreeNode tableItem = new TreeNode();
+                        tableItem.setName(columnName);
+                        tableItem.setTypeAndLength(columnTypeName + "(" + columnSize + ")");
+                        tableItem.setTreeNodeTypeEnum(TreeNodeTypeEnum.FIELD);
+                        tableItem.setIcon(Config.CONN_ICON_FIELD_PATH0);
+                        tableItem.setConnItem(currentTreeNode.getConnItem());
+                        tableFieldList.add(tableItem);
+                    }
 
-            columns.close();
-            conn.close();
-            return tableFieldList;
-        } catch (ClassNotFoundException | SQLException e) {
-            throw new RuntimeException(e);
+                    columns.close();
+                    conn.close();
+                    return tableFieldList;
+                } catch (ClassNotFoundException | SQLException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+            //对于redis而言，获取field即为获取key的列表
+            case REDIS: {
+                List<TreeNode> keyList = new ArrayList<>();
+                try (Jedis jedis = new Jedis(currentTreeNode.getConnItem().getHost(), currentTreeNode.getConnItem().getPort())) {
+                    //如果有密码添加密码认证
+                    if (!$.isEmpty(currentTreeNode.getConnItem().getPassword())) {
+                        jedis.auth(currentTreeNode.getConnItem().getPassword());
+                    }
+
+                    // 选择当前的数据库
+                    int dbIndex = Integer.parseInt(parent.getName());
+                    jedis.select(dbIndex);
+
+                    String cursor = "0";
+                    ScanParams params = new ScanParams();
+                    params.match("*");
+                    params.count(100);
+
+                    do {
+                        ScanResult<String> scanResult = jedis.scan(cursor, params);
+                        cursor = scanResult.getCursor();
+
+                        for (String key : scanResult.getResult()) {
+                            // 获取键的类型
+//                            String type = jedis.type(key);
+                            TreeNode keyItem = new TreeNode();
+                            keyItem.setName(key);
+                            keyItem.setTreeNodeTypeEnum(TreeNodeTypeEnum.FIELD);
+                            keyItem.setConnItem(currentTreeNode.getConnItem());
+                            keyItem.setIcon(Config.CONN_ICON_FIELD_PATH0);
+                            keyList.add(keyItem);
+                        }
+                    } while (!cursor.equals("0"));
+
+                }
+
+                return keyList;
+            }
         }
+        return null;
     }
 
     // 查询表数据

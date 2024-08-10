@@ -6,7 +6,7 @@ package io.github.alexkitc.entity.enums;
  * @apiNote
  * @since 2024/7/20 上午11:25
  */
-public enum TreeNodeType {
+public enum TreeNodeTypeEnum {
     // 根节点
     ROOT,
     CONN,

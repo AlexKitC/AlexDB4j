@@ -1,6 +1,6 @@
 package io.github.alexkitc.entity;
 
-import io.github.alexkitc.entity.enums.DbType;
+import io.github.alexkitc.entity.enums.DbTypeEnum;
 import lombok.Data;
 import lombok.experimental.Accessors;
 
@@ -19,7 +19,7 @@ public class ConnItem {
     // 连接的主机
     private String host;
     // 连接的数据库类型
-    private DbType dbType;
+    private DbTypeEnum dbTypeEnum;
     // 连接的端口
     private int port;
     // 连接的用户名
