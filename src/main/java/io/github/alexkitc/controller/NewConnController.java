@@ -91,18 +91,18 @@ public class NewConnController {
                 case REDIS:
                     port.setText("6379");
                     break;
-                case ORACLE:
-                    port.setText("1521");
-                    break;
+//                case ORACLE:
+//                    port.setText("1521");
+//                    break;
                 case MONGODB:
                     port.setText("27017");
                     break;
-                case POSTGRESQL:
-                    port.setText("5432");
-                    break;
-                case SQLSERVER:
-                    port.setText("1433");
-                    break;
+//                case POSTGRESQL:
+//                    port.setText("5432");
+//                    break;
+//                case SQLSERVER:
+//                    port.setText("1433");
+//                    break;
                 default:
                     break;
             }
@@ -136,13 +136,13 @@ public class NewConnController {
             return null;
         }
 
-        if ($.isEmpty(usernameString)) {
+        if (!dbTypeString.equals(DbType.REDIS) && $.isEmpty(usernameString)) {
             username.setPromptText("请输入连接的用户名");
             username.requestFocus();
             return null;
         }
 
-        if ($.isEmpty(passwordString)) {
+        if (!dbTypeString.equals(DbType.REDIS) && $.isEmpty(passwordString)) {
             pwd.setPromptText("请输入连接密码");
             pwd.requestFocus();
             return null;
@@ -179,8 +179,8 @@ public class NewConnController {
                     connItem.getPassword()).getBytes());
 
             NewConnStage.close();
-            App.homeControllerInstance.refreshTreeView();
             //刷新TreeView
+            App.homeControllerInstance.refreshTreeView();
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }

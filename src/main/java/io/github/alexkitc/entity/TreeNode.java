@@ -2,15 +2,18 @@ package io.github.alexkitc.entity;
 
 import io.github.alexkitc.conf.Config;
 import io.github.alexkitc.entity.enums.TreeNodeType;
+import io.github.alexkitc.util.$;
 import javafx.collections.ObservableList;
 import javafx.scene.control.TableColumn;
 import javafx.scene.text.Text;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import redis.clients.jedis.Jedis;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -62,7 +65,31 @@ public class TreeNode {
     public TreeNode(String name, TreeNodeType treeNodeType, String icon, ConnItem connItem) {
         this.name = name;
         this.treeNodeType = treeNodeType;
-        this.icon = icon;
+        switch (treeNodeType) {
+            case CONN: {
+                switch (connItem.getDbType()) {
+                    case MYSQL:
+                        this.icon = Config.CONN_ICON_DB_MYSQL_PATH0;
+                        break;
+                    case REDIS:
+                        this.icon = Config.CONN_ICON_DB_REDIS_PATH0;
+                        break;
+                    case MONGODB:
+                        this.icon = Config.CONN_ICON_DB_MONGO_PATH0;
+                        break;
+                    default:
+                        this.icon = icon;
+                }
+                break;
+            }
+
+            default: {
+                this.icon = icon;
+                break;
+            }
+
+        }
+
         this.connItem = connItem;
     }
 
@@ -86,30 +113,61 @@ public class TreeNode {
 
     // 获取数据库列表
     public List<TreeNode> getDbList(TreeNode currentTreeNode) {
-        List<TreeNode> dbList = new ArrayList<>();
-        String url = "jdbc:mysql://" + currentTreeNode.getConnItem().getHost()
-                + ":" + currentTreeNode.getConnItem().getPort()
-                + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection conn = DriverManager.getConnection(url, currentTreeNode.getConnItem().getUsername(), currentTreeNode.getConnItem().getPassword());
-            Statement stmt = conn.createStatement();
-            ResultSet rs = stmt.executeQuery(SQL_SHOW_DATABASE);
-            while (rs.next()) {
-                TreeNode dbItem = new TreeNode();
-                dbItem.setName(rs.getString(1));
-                dbItem.setTreeNodeType(TreeNodeType.DB);
-                dbItem.setIcon(Config.CONN_ICON_DB_PATH0);
-                dbItem.setConnItem(currentTreeNode.getConnItem());
-                dbList.add(dbItem);
+        switch (currentTreeNode.getConnItem().getDbType()) {
+            // mysql获取数据库
+            case MYSQL: {
+                List<TreeNode> dbList = new ArrayList<>();
+                String url = "jdbc:mysql://" + currentTreeNode.getConnItem().getHost()
+                        + ":" + currentTreeNode.getConnItem().getPort()
+                        + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
+                try {
+                    Class.forName("com.mysql.cj.jdbc.Driver");
+                    Connection conn = DriverManager.getConnection(url, currentTreeNode.getConnItem().getUsername(), currentTreeNode.getConnItem().getPassword());
+                    Statement stmt = conn.createStatement();
+                    ResultSet rs = stmt.executeQuery(SQL_SHOW_DATABASE);
+                    while (rs.next()) {
+                        TreeNode dbItem = new TreeNode();
+                        dbItem.setName(rs.getString(1));
+                        dbItem.setTreeNodeType(TreeNodeType.DB);
+                        dbItem.setIcon(Config.CONN_ICON_DB_PATH0);
+                        dbItem.setConnItem(currentTreeNode.getConnItem());
+                        dbList.add(dbItem);
+                    }
+                    rs.close();
+                    stmt.close();
+                    conn.close();
+                    return dbList;
+                } catch (ClassNotFoundException | SQLException e) {
+                    throw new RuntimeException(e);
+                }
             }
-            rs.close();
-            stmt.close();
-            conn.close();
-            return dbList;
-        } catch (ClassNotFoundException | SQLException e) {
-            throw new RuntimeException(e);
+            // REDIS获取数据库
+            case REDIS: {
+                List<TreeNode> dbList = new ArrayList<>();
+                try (Jedis jedis = new Jedis(currentTreeNode.getConnItem().getHost(),currentTreeNode.getConnItem().getPort())) {
+                    //如果有密码添加密码认证
+                    if (!$.isEmpty(currentTreeNode.getConnItem().getPassword())) {
+                        jedis.auth(currentTreeNode.getConnItem().getPassword());
+                    }
+                    //遍历所有数据库
+                    int numberOfDatabases = Integer.parseInt(jedis.configGet("databases").get("databases"));
+                    for (int dbIndex = 0; dbIndex <= numberOfDatabases; dbIndex++) {
+                        TreeNode treeNode = new TreeNode();
+                        treeNode.setTreeNodeType(TreeNodeType.DB);
+                        treeNode.setIcon(Config.CONN_ICON_DB_PATH0);
+                        treeNode.setConnItem(currentTreeNode.getConnItem());
+                        treeNode.setName(String.valueOf(dbIndex));
+                        dbList.add(treeNode);
+                    }
+                    return dbList;
+                }
+            }
+            default: {
+                break;
+            }
         }
+
+        return null;
     }
 
     // 获取指定数据库table列表

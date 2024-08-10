@@ -30,11 +30,13 @@ public class Config {
     public static final int ICON_SIZE = 18;
     public static final int ICON_SMALL_SIZE = 12;
     // 配置项分隔符
-    public static final String CONN_SPLIT_FLAG = "###";
+    public static final String CONN_SPLIT_FLAG = "\r\n";
     // 配置文件后缀
     public static final String CONFIG_FILE_SUFFIX = ".conn";
     // 主页fxml路径
     public static final String FXML_HOME_FILE_PATH = "/fxml/home.fxml";
+    // 新建连接fxml路径
+    public static final String FXML_NEW_CONN_FILE_PATH = "/fxml/new-conn.fxml";
     // css路径
     public static final String APP_CSS_PATH = "/css/app.css";
     // app图标
@@ -59,6 +61,14 @@ public class Config {
     // 连接树-mysql图标
     public static final String CONN_ICON_DB_MYSQL_PATH0 = "/icon/mysql0.png";
     public static final String CONN_ICON_DB_MYSQL_PATH1 = "/icon/mysql1.png";
+
+    // 连接树-redis图标
+    public static final String CONN_ICON_DB_REDIS_PATH0 = "/icon/redis0.png";
+    public static final String CONN_ICON_DB_REDIS_PATH1 = "/icon/redis1.png";
+
+    // 连接树-mongo图标
+    public static final String CONN_ICON_DB_MONGO_PATH0 = "/icon/mongo0.png";
+    public static final String CONN_ICON_DB_MONGO_PATH1 = "/icon/mongo1.png";
 
     // 分页图标
     public static final String PAGE_ICON_FIRST = "/icon/page-first.png";

@@ -9,7 +9,7 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/22" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.alexkitc.controller.NewConnController">
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.alexkitc.controller.NewConnController">
    <children>
       <HBox layoutX="128.0" layoutY="117.0" prefHeight="400.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
@@ -28,12 +28,12 @@
                         <Insets top="24.0" />
                      </VBox.margin>
                   </Label>
-                  <Label nodeOrientation="RIGHT_TO_LEFT" prefWidth="120.0" text="端口">
+                  <Label nodeOrientation="RIGHT_TO_LEFT" prefWidth="120.0" text="类型">
                      <VBox.margin>
                         <Insets top="24.0" />
                      </VBox.margin>
                   </Label>
-                  <Label nodeOrientation="RIGHT_TO_LEFT" prefWidth="120.0" text="类型">
+                  <Label nodeOrientation="RIGHT_TO_LEFT" prefWidth="120.0" text="端口">
                      <VBox.margin>
                         <Insets top="24.0" />
                      </VBox.margin>
@@ -75,16 +75,16 @@
                         <Insets top="18.0" />
                      </VBox.margin>
                   </TextField>
-                  <TextField fx:id="port">
-                     <VBox.margin>
-                        <Insets top="14.0" />
-                     </VBox.margin>
-                  </TextField>
                   <ComboBox fx:id="dbType" prefWidth="150.0">
                      <VBox.margin>
                         <Insets top="16.0" />
                      </VBox.margin>
                   </ComboBox>
+                  <TextField fx:id="port">
+                     <VBox.margin>
+                        <Insets top="14.0" />
+                     </VBox.margin>
+                  </TextField>
                   <TextField fx:id="username">
                      <VBox.margin>
                         <Insets top="14.0" />

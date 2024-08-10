@@ -2,7 +2,6 @@ package io.github.alexkitc.component;
 
 import io.github.alexkitc.App;
 import io.github.alexkitc.conf.Config;
-import io.github.alexkitc.controller.HomeController;
 import io.github.alexkitc.entity.TreeNode;
 import io.github.alexkitc.entity.enums.TreeNodeType;
 import javafx.geometry.Pos;
@@ -13,10 +12,8 @@ import javafx.scene.image.ImageView;
 import javafx.scene.layout.HBox;
 import javafx.scene.text.Text;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * @author alexKitc
@@ -34,7 +31,6 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
     private final Text typeAndLength = new Text();
 
 
-
     // 添加连接的点击事件
     public MyConnItemTreeCell() {
         setOnMouseClicked(event -> {
@@ -43,17 +39,29 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
                     case ROOT:
                         break;
                     case CONN:
-                        List<TreeNode> dbList = getTreeItem().getValue().getDbList(getTreeItem().getValue());
-                        List<String> historyDbList = getTreeItem().getChildren()
-                                .stream()
-                                .map(item -> item.getValue().getName())
-                                .toList();
-                        for (TreeNode db : dbList) {
-                            if (!historyDbList.contains(db.getName())) {
-                                getTreeItem().getChildren().add(new TreeItem<>(new TreeNode(db.getName(), TreeNodeType.DB, Config.CONN_ICON_DB_PATH0, db.getConnItem())));
+                        // mysql
+                        switch (getTreeItem().getValue().getConnItem().getDbType()) {
+                            case MYSQL:
+                            case REDIS: {
+                                List<TreeNode> dbList = getTreeItem().getValue().getDbList(getTreeItem().getValue());
+                                List<String> historyDbList = getTreeItem().getChildren()
+                                        .stream()
+                                        .map(item -> item.getValue().getName())
+                                        .toList();
+                                for (TreeNode db : dbList) {
+                                    if (!historyDbList.contains(db.getName())) {
+                                        getTreeItem().getChildren().add(new TreeItem<>(new TreeNode(db.getName(), TreeNodeType.DB, Config.CONN_ICON_DB_PATH0, db.getConnItem())));
+                                    }
+                                }
+                                getTreeItem().setExpanded(true);
+                                break;
+                            }
+
+                            default: {
+                                break;
                             }
                         }
-                        getTreeItem().setExpanded(true);
+
                         break;
                     case DB:
                         List<TreeNode> tableList = getTreeItem().getValue().getTableList(getTreeItem().getValue());

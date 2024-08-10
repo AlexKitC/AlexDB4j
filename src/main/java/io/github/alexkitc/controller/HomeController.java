@@ -90,7 +90,7 @@ public class HomeController {
         Stage newConnStage = new Stage();
         Parent newRoot;
         try {
-            newRoot = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/fxml/new-conn.fxml")));
+            newRoot = FXMLLoader.load(Objects.requireNonNull(getClass().getResource(FXML_NEW_CONN_FILE_PATH)));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -118,8 +118,8 @@ public class HomeController {
                                     .setHost(strings[1])
                                     .setPort(Integer.parseInt(strings[2]))
                                     .setDbType(DbType.valueOf(strings[3]))
-                                    .setUsername(strings[4])
-                                    .setPassword(strings[5]);
+                                    .setUsername(strings.length > 4 ? strings[4] : "")
+                                    .setPassword(strings.length > 5 ? strings[5] : "");
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }

@@ -11,8 +11,8 @@ public enum DbType {
     MYSQL,
     REDIS,
     MONGODB,
-    ORACLE,
-    SQLSERVER,
-    POSTGRESQL,
+//    ORACLE,
+//    SQLSERVER,
+//    POSTGRESQL,
     ;
 }
