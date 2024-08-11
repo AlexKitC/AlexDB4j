@@ -29,6 +29,8 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
     private final Text text = new Text();
     // 字段类型+长度
     private final Text typeAndLength = new Text();
+    // 表数据行数
+    private final Text rowText = new Text();
 
 
     // 添加连接的点击事件
@@ -129,7 +131,14 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
                 case CONN:
                 case DB:
                 case TABLE:
-                    hBox = new HBox(imageView, text);
+                    if (item.getTableViewRowCount() != null) {
+                        rowText.setText("(" + item.getTableViewRowCount() + ")");
+                        rowText.setStyle("-fx-font-size: 10px;-fx-fill: #707070;");
+                        hBox = new HBox(imageView, text, rowText);
+                    } else {
+                        hBox = new HBox(imageView, text);
+                    }
+
                     break;
                 case FIELD:
                     typeAndLength.setText(item.getTypeAndLength());

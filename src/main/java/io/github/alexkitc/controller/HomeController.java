@@ -530,7 +530,7 @@ public class HomeController {
                                       Button pageNextBtn,
                                       Button pageLastBtn) {
         //当前表数据行
-        int totalRows = currentTreeNode.getTableViewRowCount();
+        long totalRows = currentTreeNode.getTableViewRowCount();
         int totalPage = (int) Math.ceil((double) totalRows / limitRowValue);
         boolean pageFirstBtnEnable = currentPage > 1;
         boolean pagePrevBtnEnable = currentPage > 1;

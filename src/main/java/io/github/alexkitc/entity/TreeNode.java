@@ -38,7 +38,7 @@ public class TreeNode {
     private String typeAndLength;
 
     //当类型为table 存储表数据count
-    private Integer tableViewRowCount;
+    private Long tableViewRowCount;
 
     // 节点类型
     private TreeNodeTypeEnum treeNodeTypeEnum;
@@ -296,6 +296,10 @@ public class TreeNode {
                         }
                     } while (!cursor.equals("0"));
 
+                    // 同时设置总的key count值
+                    long keyCount = jedis.dbSize();
+                    currentTreeNode.setTableViewRowCount(keyCount);
+
                 }
 
                 return keyList;
@@ -353,7 +357,7 @@ public class TreeNode {
 
             ResultSet countRs = stmt.executeQuery(countSql);
             if (countRs.next()) {
-                int count = countRs.getInt(1);
+                long count = countRs.getLong(1);
                 currentTreeNode.setTableViewRowCount(count);
             }
             countRs.close();
