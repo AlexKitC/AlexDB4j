@@ -2,6 +2,7 @@ package io.github.alexkitc;
 
 import io.github.alexkitc.conf.Config;
 import io.github.alexkitc.controller.HomeController;
+import io.github.alexkitc.controller.NewConnController;
 import javafx.application.Application;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -24,6 +25,7 @@ import static io.github.alexkitc.conf.Config.FXML_HOME_FILE_PATH;
 public class App extends Application {
 
     public static HomeController homeControllerInstance;
+    public static NewConnController newConnControllerInstance;
 
     @Override
     public void start(Stage stage) {

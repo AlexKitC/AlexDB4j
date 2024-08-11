@@ -2,7 +2,9 @@ package io.github.alexkitc.util;
 
 import io.github.alexkitc.App;
 import io.github.alexkitc.conf.Config;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Tooltip;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
@@ -32,5 +34,26 @@ public class $ {
         button.setTooltip(new Tooltip(tooltip));
     }
 
-    // TreeItem添加图标
+    // 弹框warning提示
+    public static void alert(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.WARNING);
+        alert.setTitle(title);
+        alert.setHeaderText(title);
+        alert.setContentText(message);
+
+        // 显示 Alert 对话框
+        alert.showAndWait();
+    }
+
+    // 弹框确认提示
+    public static ButtonType confirm(String title, String message) {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.setTitle(title);
+        alert.setHeaderText(title);
+        alert.setContentText(message);
+
+        // 显示 Alert 对话框
+        alert.showAndWait();
+        return alert.getResult();
+    }
 }

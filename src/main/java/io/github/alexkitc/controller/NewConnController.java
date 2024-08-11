@@ -3,15 +3,13 @@ package io.github.alexkitc.controller;
 import io.github.alexkitc.App;
 import io.github.alexkitc.conf.Config;
 import io.github.alexkitc.entity.ConnItem;
+import io.github.alexkitc.entity.TreeNode;
 import io.github.alexkitc.entity.enums.DbTypeEnum;
 import io.github.alexkitc.util.$;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
-import javafx.scene.control.Tooltip;
+import javafx.scene.control.*;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
@@ -192,5 +190,15 @@ public class NewConnController {
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }
+    }
+
+    // 右键属性直接根据TreeNode填充
+    public void fillConnDetail(TreeNode treeNode) {
+        conName.setText(treeNode.getName());
+        host.setText(treeNode.getConnItem().getHost());
+        dbType.setValue(treeNode.getConnItem().getDbTypeEnum());
+        port.setText(String.valueOf(treeNode.getConnItem().getPort()));
+        username.setText(treeNode.getConnItem().getUsername());
+        pwd.setText(treeNode.getConnItem().getPassword());
     }
 }

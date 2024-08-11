@@ -145,14 +145,7 @@ public class TreeNode {
                     conn.close();
                     return dbList;
                 } catch (ClassNotFoundException | SQLException e) {
-                    Alert alert = new Alert(Alert.AlertType.WARNING);
-                    alert.setTitle("SQLException");
-                    alert.setHeaderText("SQLException");
-                    alert.setContentText(e.getMessage());
-
-                    // 显示 Alert 对话框
-                    alert.showAndWait();
-
+                    $.alert("SQLException", e.getMessage());
                 }
                 break;
             }
@@ -176,13 +169,7 @@ public class TreeNode {
                     }
                     return dbList;
                 } catch (JedisConnectionException e) {
-                    Alert alert = new Alert(Alert.AlertType.WARNING);
-                    alert.setTitle("RedisConnectionException");
-                    alert.setHeaderText("RedisConnectionException");
-                    alert.setContentText(e.getMessage());
-
-                    // 显示 Alert 对话框
-                    alert.showAndWait();
+                    $.alert("RedisConnectionException", e.getMessage());
                 }
 
                 break;

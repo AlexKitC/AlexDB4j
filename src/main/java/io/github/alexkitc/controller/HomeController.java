@@ -2,6 +2,7 @@ package io.github.alexkitc.controller;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import io.github.alexkitc.App;
 import io.github.alexkitc.component.MyConnItemTreeCell;
 import io.github.alexkitc.conf.Config;
 import io.github.alexkitc.entity.ConnItem;
@@ -87,15 +88,17 @@ public class HomeController {
     private void onClickNewConn() {
         // 创建并显示新窗口
         Stage newConnStage = new Stage();
+        FXMLLoader fxmlLoader = new FXMLLoader(Objects.requireNonNull(getClass().getResource(FXML_NEW_CONN_FILE_PATH)));
         Parent newRoot;
         try {
-            newRoot = FXMLLoader.load(Objects.requireNonNull(getClass().getResource(FXML_NEW_CONN_FILE_PATH)));
+            newRoot = fxmlLoader.load();
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
         newConnStage.setTitle(Config.APP_NEW_CONN_TITLE);
         newConnStage.setScene(new Scene(newRoot));
         NewConnController.NewConnStage = newConnStage;
+        App.newConnControllerInstance = fxmlLoader.getController();
         newConnStage.getIcons().add(new Image(APP_AUTHOR_ICO));
         newConnStage.show();
     }
