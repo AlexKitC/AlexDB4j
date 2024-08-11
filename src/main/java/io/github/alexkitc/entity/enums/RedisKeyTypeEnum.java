@@ -10,7 +10,8 @@ public enum RedisKeyTypeEnum {
     STRING,
     LIST,
     SET,
-    SORTEDSET,
+    ZSET,
     HASH,
-    STREAM
+//    NONE
+//    STREAM
 }

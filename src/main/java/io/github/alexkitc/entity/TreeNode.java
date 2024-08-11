@@ -16,6 +16,7 @@ import redis.clients.jedis.resps.ScanResult;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -42,6 +43,8 @@ public class TreeNode {
 
     // 节点类型
     private TreeNodeTypeEnum treeNodeTypeEnum;
+
+    private TreeNode parent;
 
     // 节点的图标
     private String icon;
@@ -286,19 +289,22 @@ public class TreeNode {
 
                         for (String key : scanResult.getResult()) {
                             // 获取键的类型
-//                            String type = jedis.type(key);
-                            TreeNode keyItem = new TreeNode();
-                            keyItem.setName(key);
-                            keyItem.setTreeNodeTypeEnum(TreeNodeTypeEnum.FIELD);
-                            keyItem.setConnItem(currentTreeNode.getConnItem());
-                            keyItem.setIcon(Config.CONN_ICON_FIELD_PATH0);
-                            keyList.add(keyItem);
+                            String type = jedis.type(key);
+                            // 仅返回当前类型key数据
+                            if (currentTreeNode.getName().toLowerCase().equals(type)) {
+                                TreeNode keyItem = new TreeNode();
+                                keyItem.setName(key);
+                                keyItem.setTreeNodeTypeEnum(TreeNodeTypeEnum.FIELD);
+                                keyItem.setConnItem(currentTreeNode.getConnItem());
+                                keyItem.setIcon(Config.CONN_ICON_FIELD_PATH0);
+                                keyList.add(keyItem);
+                            }
+
                         }
                     } while (!cursor.equals("0"));
 
                     // 同时设置总的key count值
-                    long keyCount = jedis.dbSize();
-                    currentTreeNode.setTableViewRowCount(keyCount);
+                    currentTreeNode.setTableViewRowCount((long) keyList.size());
 
                 }
 
@@ -310,65 +316,159 @@ public class TreeNode {
 
     // 查询表数据
     public void getTableRowDataList(TreeNode parent,
-                                                       TreeNode currentTreeNode,
-                                                       ObservableList<TableColumn<RowData, ?>> columns,
-                                                       ObservableList<RowData> rowList,
-                                                       String whereCondition,
-                                                       String orderby,
-                                                       Integer limitRows,
-                                                       Text sqlText) {
-        String url = "jdbc:mysql://" + currentTreeNode.getConnItem().getHost()
-                + ":" + currentTreeNode.getConnItem().getPort()
-                + "/" + parent.getName()
-                + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection conn = DriverManager.getConnection(url, currentTreeNode.getConnItem().getUsername(), currentTreeNode.getConnItem().getPassword());
-            Statement stmt = conn.createStatement();
-            String sql = "SELECT * FROM " + currentTreeNode.getName();
-            if (!Objects.isNull(whereCondition) && !whereCondition.trim().isEmpty()) {
-                sql += " WHERE " + whereCondition;
-            }
-            if (!Objects.isNull(orderby) && !orderby.trim().isEmpty()) {
-                sql += " ORDER BY " + orderby;
-            }
-            if (Objects.nonNull(limitRows)) {
-                sql += " LIMIT " + limitRows;
-            }
+                                    TreeNode currentTreeNode,
+                                    ObservableList<TableColumn<RowData, ?>> columns,
+                                    ObservableList<RowData> rowList,
+                                    String whereCondition,
+                                    String orderby,
+                                    Integer limitRows,
+                                    Text sqlText) {
+        switch (currentTreeNode.getConnItem().getDbTypeEnum()) {
+            case MYSQL: {
+                String url = "jdbc:mysql://" + currentTreeNode.getConnItem().getHost()
+                        + ":" + currentTreeNode.getConnItem().getPort()
+                        + "/" + parent.getName()
+                        + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
+                try {
+                    Class.forName("com.mysql.cj.jdbc.Driver");
+                    Connection conn = DriverManager.getConnection(url, currentTreeNode.getConnItem().getUsername(), currentTreeNode.getConnItem().getPassword());
+                    Statement stmt = conn.createStatement();
+                    String sql = "SELECT * FROM " + currentTreeNode.getName();
+                    if (!Objects.isNull(whereCondition) && !whereCondition.trim().isEmpty()) {
+                        sql += " WHERE " + whereCondition;
+                    }
+                    if (!Objects.isNull(orderby) && !orderby.trim().isEmpty()) {
+                        sql += " ORDER BY " + orderby;
+                    }
+                    if (Objects.nonNull(limitRows)) {
+                        sql += " LIMIT " + limitRows;
+                    }
 
-            ResultSet rs = stmt.executeQuery(sql);
-            sqlText.setText(sql);
-            while (rs.next()) {
-                RowData rowData = new RowData();
-                for (TableColumn<RowData, ?> column : columns) {
-                    String columnName = column.getText();
-                    Object value = rs.getObject(columnName);
-                    rowData.put(columnName, value);
+                    ResultSet rs = stmt.executeQuery(sql);
+                    sqlText.setText(sql);
+                    while (rs.next()) {
+                        RowData rowData = new RowData();
+                        for (TableColumn<RowData, ?> column : columns) {
+                            String columnName = column.getText();
+                            Object value = rs.getObject(columnName);
+                            rowData.put(columnName, value);
+                        }
+                        rowList.add(rowData);
+                    }
+                    String countSql = "SELECT COUNT(*) FROM " + currentTreeNode.getName();
+                    if (!Objects.isNull(whereCondition) && !whereCondition.trim().isEmpty()) {
+                        countSql += " WHERE " + whereCondition;
+                    }
+                    if (!Objects.isNull(orderby) && !orderby.trim().isEmpty()) {
+                        countSql += " ORDER BY " + orderby;
+                    }
+
+                    ResultSet countRs = stmt.executeQuery(countSql);
+                    if (countRs.next()) {
+                        long count = countRs.getLong(1);
+                        currentTreeNode.setTableViewRowCount(count);
+                    }
+                    countRs.close();
+                    rs.close();
+                    stmt.close();
+                    conn.close();
+
+                } catch (ClassNotFoundException | SQLException e) {
+                    sqlText.setText(e.getMessage());
+                    throw new RuntimeException(e);
                 }
-                rowList.add(rowData);
+                break;
             }
-            String countSql = "SELECT COUNT(*) FROM " + currentTreeNode.getName();
-            if (!Objects.isNull(whereCondition) && !whereCondition.trim().isEmpty()) {
-                countSql += " WHERE " + whereCondition;
-            }
-            if (!Objects.isNull(orderby) && !orderby.trim().isEmpty()) {
-                countSql += " ORDER BY " + orderby;
-            }
+            case REDIS: {
+                try (Jedis jedis = new Jedis(currentTreeNode.getConnItem().getHost(), currentTreeNode.getConnItem().getPort())) {
+                    //如果有密码添加密码认证
+                    if (!$.isEmpty(currentTreeNode.getConnItem().getPassword())) {
+                        jedis.auth(currentTreeNode.getConnItem().getPassword());
+                    }
 
-            ResultSet countRs = stmt.executeQuery(countSql);
-            if (countRs.next()) {
-                long count = countRs.getLong(1);
-                currentTreeNode.setTableViewRowCount(count);
-            }
-            countRs.close();
-            rs.close();
-            stmt.close();
-            conn.close();
+                    // 选择当前的数据库
+                    int dbIndex = Integer.parseInt(parent.getParent().getName());
+                    jedis.select(dbIndex);
 
-        } catch (ClassNotFoundException | SQLException e) {
-            sqlText.setText(e.getMessage());
-            throw new RuntimeException(e);
+                    switch (parent.getName().toLowerCase()) {
+                        case "string": {
+                            RowData rowData = new RowData();
+                            for (TableColumn<RowData, ?> column : columns) {
+                                String columnName = column.getText();
+                                String value = jedis.get(currentTreeNode.getName());
+                                rowData.put(columnName, value);
+                            }
+                            rowList.add(rowData);
+
+                            sqlText.setText("GET " + currentTreeNode.getName());
+                            break;
+                        }
+                        case "list": {
+                            jedis.lrange(currentTreeNode.getName(), 0, -1)
+                                    .forEach(value -> {
+                                        RowData rowData = new RowData();
+                                        for (TableColumn<RowData, ?> column : columns) {
+                                            String columnName = column.getText();
+                                            rowData.put(columnName, value);
+                                        }
+                                        rowList.add(rowData);
+                                    });
+
+                            sqlText.setText("LRANGE " + currentTreeNode.getName());
+                            break;
+                        }
+                        case "set": {
+                            jedis.smembers(currentTreeNode.getName()).forEach(
+                                    value -> {
+                                        RowData rowData = new RowData();
+                                        for (TableColumn<RowData, ?> column : columns) {
+                                            String columnName = column.getText();
+                                            rowData.put(columnName, value);
+                                        }
+                                        rowList.add(rowData);
+                                    }
+                            );
+
+                            sqlText.setText("SMEMBERS " + currentTreeNode.getName());
+                            break;
+                        }
+                        case "zset": {
+                            jedis.zrangeWithScores(currentTreeNode.getName(), 0, -1).forEach(
+                                    value -> {
+                                        RowData rowData = new RowData();
+                                        rowData.put("value", value.getElement());
+                                        rowData.put("score", value.getScore());
+                                        rowList.add(rowData);
+                                    }
+                            );
+
+                            sqlText.setText("ZGRANGEBYSCORE  " + currentTreeNode.getName());
+                            break;
+                        }
+                        case "hash": {
+                            Map<String, String> hashValue = jedis.hgetAll(currentTreeNode.getName());
+                            for (Map.Entry<String, String> entry : hashValue.entrySet()) {
+                                RowData rowData = new RowData();
+                                rowData.put("field", entry.getKey());
+                                rowData.put("value", entry.getValue());
+                                rowList.add(rowData);
+                            }
+
+                            sqlText.setText("HGETALL  " + currentTreeNode.getName());
+                            break;
+                        }
+                        default:
+                            break;
+                    }
+
+                }
+
+                break;
+            }
+            default:
+                break;
         }
+
     }
 
 

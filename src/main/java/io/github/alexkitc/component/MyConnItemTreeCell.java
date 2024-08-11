@@ -3,6 +3,7 @@ package io.github.alexkitc.component;
 import io.github.alexkitc.App;
 import io.github.alexkitc.conf.Config;
 import io.github.alexkitc.entity.TreeNode;
+import io.github.alexkitc.entity.enums.DbTypeEnum;
 import io.github.alexkitc.entity.enums.TreeNodeTypeEnum;
 import javafx.geometry.Pos;
 import javafx.scene.control.TreeCell;
@@ -33,7 +34,7 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
     private final Text rowText = new Text();
 
 
-    // 添加连接的点击事件
+    // 添加树节点的点击事件
     public MyConnItemTreeCell() {
         setOnMouseClicked(event -> {
             if (event.getClickCount() == 2) {
@@ -89,6 +90,8 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
                                 getTreeItem().getChildren().add(new TreeItem<>(new TreeNode(tableField.getName(), TreeNodeTypeEnum.FIELD, Config.CONN_ICON_FIELD_PATH0, tableField.getConnItem(), tableField.getTypeAndLength())));
                             }
                         }
+                        TreeNode innerParent = getTreeItem().getParent().getValue();
+                        getTreeItem().getValue().setParent(innerParent);
                         // 新建TabPane容器展示数据
                         switch (getTreeItem().getValue().getConnItem().getDbTypeEnum()) {
                             case MYSQL:
@@ -96,6 +99,8 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
                                 break;
                                 // redis类型需要展开TreeView
                             case REDIS:
+                                TreeNode parent = getTreeItem().getParent().getValue();
+                                parent.setParent(parent.getParent());
                                 getTreeItem().setExpanded(true);
                                 break;
                             case MONGODB:
@@ -104,6 +109,13 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
                                 break;
                         }
                         break;
+                    case FIELD: {
+                        //暂时字段类型仅针对redis方可点击
+                        if (getTreeItem().getValue().getConnItem().getDbTypeEnum().equals(DbTypeEnum.REDIS)) {
+                            App.homeControllerInstance.addRedisTabPaneOfData(getTreeItem().getParent().getValue(), getTreeItem().getValue());
+                        }
+                        break;
+                    }
                     default:
                         break;
                 }

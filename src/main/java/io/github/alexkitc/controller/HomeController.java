@@ -8,6 +8,7 @@ import io.github.alexkitc.entity.ConnItem;
 import io.github.alexkitc.entity.RowData;
 import io.github.alexkitc.entity.TreeNode;
 import io.github.alexkitc.entity.enums.DbTypeEnum;
+import io.github.alexkitc.entity.enums.RedisKeyTypeEnum;
 import io.github.alexkitc.entity.enums.TreeNodeTypeEnum;
 import io.github.alexkitc.util.$;
 import javafx.application.Platform;
@@ -456,6 +457,132 @@ public class HomeController {
             tab.setContent(null);
             System.gc();
         });
+    }
+
+
+    // 新建redis类型Tab
+    public void addRedisTabPaneOfData(TreeNode parent, TreeNode treeNode) {
+        // 首次新建
+        if (tabPane == null) {
+            tabPane = new TabPane();
+        }
+        System.gc();
+        List<String> tabNameList = tabPane.getTabs()
+                .stream()
+                .map(Tab::getText)
+                .toList();
+        String tabName = parent.getName() + " " + treeNode.getName() + " " + treeNode.getConnItem().getHost();
+        Tab tab;
+
+        //首次打开新标签
+        if (!tabNameList.contains(tabName)) {
+            tab = new Tab(tabName);
+        } else {
+            //已存在标签直接获得焦点
+            tab = tabPane.getTabs()
+                    .stream()
+                    .filter(t -> t.getText().equals(tabName))
+                    .limit(1)
+                    .toList()
+                    .getFirst();
+        }
+
+        // 存储当前连接信息已备后续展开逻辑
+        tab.setUserData(treeNode);
+
+        //content内容：需要包含2部分
+        VBox vBox = new VBox();
+
+        TableView<RowData> tableView = new TableView<>();
+        HBox row2 = new HBox();
+        row2.setPrefHeight(32);
+        Text sqlText = new Text();
+        row2.getChildren().add(sqlText);
+        row2.setPadding(new Insets(0, 0, 0, 6));
+        row2.setAlignment(Pos.CENTER_LEFT);
+        vBox.getChildren().addAll(tableView, row2);
+
+        // TabPane锚点
+        AnchorPane.setTopAnchor(tabPane, 0.0);
+        AnchorPane.setBottomAnchor(tabPane, 0.0);
+        AnchorPane.setLeftAnchor(tabPane, 0.0);
+        AnchorPane.setRightAnchor(tabPane, 0.0);
+
+        // VBox锚点
+        AnchorPane.setTopAnchor(vBox, 0.0);
+        AnchorPane.setBottomAnchor(vBox, 0.0);
+        AnchorPane.setLeftAnchor(vBox, 0.0);
+        AnchorPane.setRightAnchor(vBox, 0.0);
+
+        // TableView锚点
+        AnchorPane.setTopAnchor(tableView, 0.0);
+        AnchorPane.setBottomAnchor(tableView, 0.0);
+        AnchorPane.setLeftAnchor(tableView, 0.0);
+        AnchorPane.setRightAnchor(tableView, 0.0);
+
+        //VBox尽可能的占据空间伸缩
+        VBox.setVgrow(tableView, Priority.ALWAYS);
+
+        // 不允许相同tab反复添加到容器内
+        if (!tabNameList.contains(tab.getText())) {
+            tab.setContent(vBox);
+            tabPane.getTabs().add(tab);
+        }
+
+        // 获得焦点
+        tabPane.getSelectionModel().select(tab);
+
+        if (!mainDataContainer.getChildren().contains(tabPane)) {
+            mainDataContainer.getChildren().add(tabPane);
+        }
+
+        tableView.setFixedCellSize(25);
+
+        // 表头 string list set 3种类型仅有一个value类型， zset 和 hash 需要两个字段
+        ObservableList<TableColumn<RowData, ?>> columns = FXCollections.observableArrayList();
+
+        if (parent.getName().toUpperCase().equals(RedisKeyTypeEnum.STRING.name())
+                || parent.getName().toUpperCase().equals(RedisKeyTypeEnum.LIST.name())
+                || parent.getName().toUpperCase().equals(RedisKeyTypeEnum.SET.name())) {
+            TableColumn<RowData, String> valueColumn = new TableColumn<>("value");
+            valueColumn.setCellValueFactory(param -> new SimpleObjectProperty<>(param.getValue().get("value")).asString());
+            columns.add(valueColumn);
+        } else if (parent.getName().toUpperCase().equals(RedisKeyTypeEnum.ZSET.name())) {
+
+            TableColumn<RowData, String> valueColumn = new TableColumn<>("value");
+            valueColumn.setCellValueFactory(param -> new SimpleObjectProperty<>(param.getValue().get("value")).asString());
+            columns.add(valueColumn);
+
+            TableColumn<RowData, String> scoreColumn = new TableColumn<>("score");
+            scoreColumn.setCellValueFactory(param -> new SimpleObjectProperty<>(param.getValue().get("score")).asString());
+            columns.add(scoreColumn);
+        } else if (parent.getName().toUpperCase().equals(RedisKeyTypeEnum.HASH.name())) {
+
+            TableColumn<RowData, String> fieldColumn = new TableColumn<>("field");
+            fieldColumn.setCellValueFactory(param -> new SimpleObjectProperty<>(param.getValue().get("field")).asString());
+            columns.add(fieldColumn);
+
+            TableColumn<RowData, String> valueColumn = new TableColumn<>("value");
+            valueColumn.setCellValueFactory(param -> new SimpleObjectProperty<>(param.getValue().get("value")).asString());
+            columns.add(valueColumn);
+        }
+        // 设置表列
+        tableView.getColumns().setAll(columns);
+
+        // 表数据
+        ObservableList<RowData> tableDataList = FXCollections.observableArrayList();
+        //获得表数据
+        parent.setParent(parent.getParent());
+        treeNode.getTableRowDataList(parent,
+                treeNode,
+                columns,
+                tableDataList,
+                null,
+                null,
+                null,
+                sqlText);
+        // 表赋值数据
+        tableView.setItems(tableDataList);
     }
 
     // 双击行数据传入列名和值绘制一个编辑面板
