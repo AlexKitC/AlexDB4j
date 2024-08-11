@@ -5,11 +5,13 @@ import io.github.alexkitc.entity.enums.RedisKeyTypeEnum;
 import io.github.alexkitc.entity.enums.TreeNodeTypeEnum;
 import io.github.alexkitc.util.$;
 import javafx.collections.ObservableList;
+import javafx.scene.control.Alert;
 import javafx.scene.control.TableColumn;
 import javafx.scene.text.Text;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 
@@ -143,8 +145,16 @@ public class TreeNode {
                     conn.close();
                     return dbList;
                 } catch (ClassNotFoundException | SQLException e) {
-                    throw new RuntimeException(e);
+                    Alert alert = new Alert(Alert.AlertType.WARNING);
+                    alert.setTitle("SQLException");
+                    alert.setHeaderText("SQLException");
+                    alert.setContentText(e.getMessage());
+
+                    // 显示 Alert 对话框
+                    alert.showAndWait();
+
                 }
+                break;
             }
             // REDIS获取数据库
             case REDIS: {
@@ -165,7 +175,17 @@ public class TreeNode {
                         dbList.add(treeNode);
                     }
                     return dbList;
+                } catch (JedisConnectionException e) {
+                    Alert alert = new Alert(Alert.AlertType.WARNING);
+                    alert.setTitle("RedisConnectionException");
+                    alert.setHeaderText("RedisConnectionException");
+                    alert.setContentText(e.getMessage());
+
+                    // 显示 Alert 对话框
+                    alert.showAndWait();
                 }
+
+                break;
             }
             default: {
                 break;

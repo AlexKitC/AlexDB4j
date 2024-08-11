@@ -51,6 +51,9 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
                                         .stream()
                                         .map(item -> item.getValue().getName())
                                         .toList();
+                                if (dbList == null) {
+                                    return;
+                                }
                                 for (TreeNode db : dbList) {
                                     if (!historyDbList.contains(db.getName())) {
                                         getTreeItem().getChildren().add(new TreeItem<>(new TreeNode(db.getName(), TreeNodeTypeEnum.DB, Config.CONN_ICON_DB_PATH0, db.getConnItem())));

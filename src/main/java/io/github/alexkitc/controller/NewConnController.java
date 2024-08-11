@@ -9,7 +9,9 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
 import java.io.IOException;
@@ -41,6 +43,10 @@ public class NewConnController {
     @FXML
     private TextField pwd;
 
+    // 测试连接的提示文本
+    @FXML
+    private Label testConnText;
+
     //初始化db类型选项
     @FXML
     private void initialize() {
@@ -62,7 +68,7 @@ public class NewConnController {
     // 测试连接
     @FXML
     private void onClickTestConn() {
-
+        testConnText.setText("暂不实现");
     }
 
     // 关闭新建连接面板

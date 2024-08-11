@@ -95,7 +95,7 @@
                         <Insets top="16.0" />
                      </VBox.margin>
                   </TextField>
-                  <Label text="_">
+                  <Label fx:id="testConnText" text="_">
                      <VBox.margin>
                         <Insets top="24.0" />
                      </VBox.margin>
