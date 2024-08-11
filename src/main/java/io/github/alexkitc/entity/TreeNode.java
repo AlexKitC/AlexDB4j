@@ -395,7 +395,6 @@ public class TreeNode {
 
                 } catch (ClassNotFoundException | SQLException e) {
                     sqlText.setText(e.getMessage());
-                    throw new RuntimeException(e);
                 }
                 break;
             }

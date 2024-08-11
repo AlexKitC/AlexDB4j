@@ -363,6 +363,27 @@ public class HomeController {
                 tableView.setItems(newTableDataList);
 
                 refreshPageBtnReCalc(treeNode, Integer.parseInt(defaultFetchRowTextField.getText()), treeNode.getCurrentPage(), pageFirstBtn, pagePrevBtn, pageNextBtn, pageLastBtn);
+
+                if (whereByStackPane.isVisible()) {
+                    whereByStackPane.setVisible(false);
+                }
+            }
+
+            //退出则隐藏语法提示面板
+            //当语法提示出现的时候，Tab按键和方向键可直接提供输入
+            if (ev.getCode().equals(KeyCode.ESCAPE)) {
+                whereByListView.getItems().clear();
+                if (whereByStackPane.isVisible()) {
+                    whereByStackPane.setVisible(false);
+                }
+            } else if (ev.getCode().equals(KeyCode.TAB)) {
+                whereTextField.setText(whereByListView.getSelectionModel().getSelectedItem());
+                if (whereByStackPane.isVisible()) {
+                    whereByStackPane.setVisible(false);
+                }
+                whereTextField.requestFocus();
+            } else if (ev.getCode().equals(KeyCode.DOWN)) {
+                whereByListView.requestFocus();
             }
         });
         orderbyTextField.setOnKeyPressed(ev -> {
@@ -378,7 +399,9 @@ public class HomeController {
                 tableView.setItems(newTableDataList);
 
                 refreshPageBtnReCalc(treeNode, Integer.parseInt(defaultFetchRowTextField.getText()), treeNode.getCurrentPage(), pageFirstBtn, pagePrevBtn, pageNextBtn, pageLastBtn);
-
+                if (orderByStackPane.isVisible()) {
+                    orderByStackPane.setVisible(false);
+                }
             }
             //退出则隐藏语法提示面板
             //当语法提示出现的时候，Tab按键和方向键可直接提供输入
@@ -402,17 +425,32 @@ public class HomeController {
         // where输入框输入内容监听输入事件
         whereTextField.textProperty().addListener((ob, oldValue, newValue) -> {
             List<String> optionList = colNameList.stream()
-                    .filter(col -> col.contains(newValue) || col.contains(newValue.toLowerCase()))
+                    .filter(col -> col.contains(newValue) || col.contains(newValue.toLowerCase()) || col.contains(newValue.toUpperCase()))
                     .distinct()
                     .toList();
             whereByListView.getItems().clear();
             whereByListView.getItems().addAll(optionList);
-            whereByListView.getSelectionModel().selectFirst();
+            if (!whereByListView.getItems().isEmpty()) {
+                whereByListView.getSelectionModel().selectFirst();
+            }
+            if (!whereByStackPane.isVisible()) {
+                whereByStackPane.setVisible(true);
+            }
 
         });
         mainDataContainer.getChildren().add(whereByStackPane);
         AnchorPane.setTopAnchor(whereByStackPane, 96.0);
         AnchorPane.setLeftAnchor(whereByStackPane, 62.0);
+
+        whereByListView.addEventFilter(KeyEvent.KEY_PRESSED, ev -> {
+            if (ev.getCode().equals(KeyCode.ENTER) || ev.getCode().equals(KeyCode.TAB)) {
+                whereTextField.setText(whereByListView.getSelectionModel().getSelectedItem());
+                if (whereByStackPane.isVisible()) {
+                    whereByStackPane.setVisible(false);
+                }
+                whereTextField.requestFocus();
+            }
+        });
 
         // orderBy输入框输入内容监听输入事件
         orderbyTextField.textProperty().addListener((ob, oldValue, newValue) -> {
