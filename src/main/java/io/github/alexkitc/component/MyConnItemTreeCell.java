@@ -224,6 +224,16 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
                     newConnStage.show();
                 });
 
+                // 新建连接
+                menuItemOfNewDb.setOnAction(ev -> {
+                    $.info("敬请期待", "作者还在开发中");
+                });
+
+                // 重命名
+                menuItemOfRename.setOnAction(ev -> {
+                    $.info("敬请期待", "作者还在开发中");
+                });
+
                 //刷新点击事件
                 menuItemOfRefresh.setOnAction(ev -> {
                     App.homeControllerInstance.refreshTreeView();

@@ -5,7 +5,6 @@ import io.github.alexkitc.entity.enums.RedisKeyTypeEnum;
 import io.github.alexkitc.entity.enums.TreeNodeTypeEnum;
 import io.github.alexkitc.util.$;
 import javafx.collections.ObservableList;
-import javafx.scene.control.Alert;
 import javafx.scene.control.TableColumn;
 import javafx.scene.text.Text;
 import lombok.Data;
@@ -145,7 +144,7 @@ public class TreeNode {
                     conn.close();
                     return dbList;
                 } catch (ClassNotFoundException | SQLException e) {
-                    $.alert("SQLException", e.getMessage());
+                    $.warning("SQLException", e.getMessage());
                 }
                 break;
             }
@@ -169,7 +168,7 @@ public class TreeNode {
                     }
                     return dbList;
                 } catch (JedisConnectionException e) {
-                    $.alert("RedisConnectionException", e.getMessage());
+                    $.warning("RedisConnectionException", e.getMessage());
                 }
 
                 break;
