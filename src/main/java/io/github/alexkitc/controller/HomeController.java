@@ -532,6 +532,24 @@ public class HomeController {
 
         });
 
+        //最后一页
+        pageLastBtn.setOnAction(ev -> {
+            treeNode.setCurrentPage((int) Math.ceil((double) treeNode.getTableViewRowCount() / Integer.parseInt(defaultFetchRowTextField.getText())));
+            ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
+            treeNode.triggerPageEvent(parent,
+                    treeNode,
+                    columns,
+                    newTableDataList,
+                    whereTextField.getText(),
+                    orderbyTextField.getText(),
+                    Integer.parseInt(defaultFetchRowTextField.getText()),
+                    sqlText);
+
+            tableView.setItems(newTableDataList);
+            refreshPageBtnReCalc(treeNode, Integer.parseInt(defaultFetchRowTextField.getText()), treeNode.getCurrentPage(), pageFirstBtn, pagePrevBtn, pageNextBtn, pageLastBtn);
+
+        });
+
 //
         // 表数据行双击事件
         tableView.setOnMouseClicked(event -> {
