@@ -305,7 +305,7 @@ public class TreeNode {
     }
 
     // 查询表数据
-    public ObservableList<RowData> getTableRowDataList(TreeNode parent,
+    public void getTableRowDataList(TreeNode parent,
                                                        TreeNode currentTreeNode,
                                                        ObservableList<TableColumn<RowData, ?>> columns,
                                                        ObservableList<RowData> rowList,
@@ -343,65 +343,30 @@ public class TreeNode {
                 }
                 rowList.add(rowData);
             }
-
-            rs.close();
-            stmt.close();
-            conn.close();
-            return rowList;
-        } catch (ClassNotFoundException | SQLException e) {
-            sqlText.setText(e.getMessage());
-            throw new RuntimeException(e);
-        }
-    }
-
-    // 获取当前表数据count值
-    public void getTableRowCount(TreeNode parent,
-                                 TreeNode currentTreeNode,
-                                 ObservableList<TableColumn<RowData, ?>> columns,
-                                 ObservableList<RowData> rowList,
-                                 String whereCondition,
-                                 String orderby,
-                                 Integer limitRows,
-                                 Text sqlText) {
-        String url = "jdbc:mysql://" + currentTreeNode.getConnItem().getHost()
-                + ":" + currentTreeNode.getConnItem().getPort()
-                + "/" + parent.getName()
-                + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection conn = DriverManager.getConnection(url, currentTreeNode.getConnItem().getUsername(), currentTreeNode.getConnItem().getPassword());
-            Statement stmt = conn.createStatement();
-            String sql = "SELECT COUNT(*) FROM " + currentTreeNode.getName();
+            String countSql = "SELECT COUNT(*) FROM " + currentTreeNode.getName();
             if (!Objects.isNull(whereCondition) && !whereCondition.trim().isEmpty()) {
-                sql += " WHERE " + whereCondition;
+                countSql += " WHERE " + whereCondition;
             }
             if (!Objects.isNull(orderby) && !orderby.trim().isEmpty()) {
-                sql += " ORDER BY " + orderby;
-            }
-            if (Objects.nonNull(limitRows)) {
-                sql += " LIMIT " + limitRows;
+                countSql += " ORDER BY " + orderby;
             }
 
-            ResultSet rs = stmt.executeQuery(sql);
-
-            while (rs.next()) {
-                RowData rowData = new RowData();
-                for (TableColumn<RowData, ?> column : columns) {
-                    String columnName = column.getText();
-                    Object value = rs.getObject(columnName);
-                    rowData.put(columnName, value);
-                }
-                rowList.add(rowData);
+            ResultSet countRs = stmt.executeQuery(countSql);
+            if (countRs.next()) {
+                int count = countRs.getInt(1);
+                currentTreeNode.setTableViewRowCount(count);
             }
-
+            countRs.close();
             rs.close();
             stmt.close();
             conn.close();
+
         } catch (ClassNotFoundException | SQLException e) {
             sqlText.setText(e.getMessage());
             throw new RuntimeException(e);
         }
     }
+
 
     public ObservableList<RowData> triggerPageEvent(TreeNode parent,
                                                     TreeNode currentTreeNode,

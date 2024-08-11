@@ -320,6 +320,8 @@ public class HomeController {
 
         // 表赋值数据
         tableView.setItems(tableDataList);
+        //刷新翻页按钮状态
+        refreshPageBtnReCalc(treeNode, Integer.parseInt(defaultFetchRowTextField.getText()), treeNode.getCurrentPage(), pageFirstBtn, pagePrevBtn, pageNextBtn, pageLastBtn);
 
         //where, orderBy, limit输入框新增回车查询事件
         defaultFetchRowTextField.setOnKeyPressed(ev -> {
@@ -333,6 +335,8 @@ public class HomeController {
                         orderbyTextField.getText(),
                         Integer.parseInt(defaultFetchRowTextField.getText()), sqlText);
                 tableView.setItems(newTableDataList);
+
+                refreshPageBtnReCalc(treeNode, Integer.parseInt(defaultFetchRowTextField.getText()), treeNode.getCurrentPage(), pageFirstBtn, pagePrevBtn, pageNextBtn, pageLastBtn);
             }
         });
         whereTextField.setOnKeyPressed(ev -> {
@@ -346,6 +350,8 @@ public class HomeController {
                         orderbyTextField.getText(),
                         Integer.parseInt(defaultFetchRowTextField.getText()), sqlText);
                 tableView.setItems(newTableDataList);
+
+                refreshPageBtnReCalc(treeNode, Integer.parseInt(defaultFetchRowTextField.getText()), treeNode.getCurrentPage(), pageFirstBtn, pagePrevBtn, pageNextBtn, pageLastBtn);
             }
         });
         orderbyTextField.setOnKeyPressed(ev -> {
@@ -359,6 +365,9 @@ public class HomeController {
                         orderbyTextField.getText(),
                         Integer.parseInt(defaultFetchRowTextField.getText()), sqlText);
                 tableView.setItems(newTableDataList);
+
+                refreshPageBtnReCalc(treeNode, Integer.parseInt(defaultFetchRowTextField.getText()), treeNode.getCurrentPage(), pageFirstBtn, pagePrevBtn, pageNextBtn, pageLastBtn);
+
             }
         });
 
@@ -383,9 +392,7 @@ public class HomeController {
                     Integer.parseInt(defaultFetchRowTextField.getText()),
                     sqlText);
             tableView.setItems(newTableDataList);
-            pageFirstBtn.setDisable(true);
-            pagePrevBtn.setDisable(true);
-            pageNextBtn.setDisable(newTableDataList.size() < Integer.parseInt(defaultFetchRowTextField.getText()));
+            refreshPageBtnReCalc(treeNode, Integer.parseInt(defaultFetchRowTextField.getText()), treeNode.getCurrentPage(), pageFirstBtn, pagePrevBtn, pageNextBtn, pageLastBtn);
         });
 
         pagePrevBtn.setOnAction(ev -> {
@@ -400,9 +407,8 @@ public class HomeController {
                     Integer.parseInt(defaultFetchRowTextField.getText()),
                     sqlText);
             tableView.setItems(newTableDataList);
-            pagePrevBtn.setDisable(treeNode.getCurrentPage() == 1);
-            pageFirstBtn.setDisable(treeNode.getCurrentPage() == 1);
-            pageNextBtn.setDisable(newTableDataList.size() < Integer.parseInt(defaultFetchRowTextField.getText()));
+            refreshPageBtnReCalc(treeNode, Integer.parseInt(defaultFetchRowTextField.getText()), treeNode.getCurrentPage(), pageFirstBtn, pagePrevBtn, pageNextBtn, pageLastBtn);
+
         });
 
         pageNextBtn.setOnAction(ev -> {
@@ -416,19 +422,12 @@ public class HomeController {
                     orderbyTextField.getText(),
                     Integer.parseInt(defaultFetchRowTextField.getText()),
                     sqlText);
-            pageNextBtn.setDisable(newTableDataList.size() < Integer.parseInt(defaultFetchRowTextField.getText()));
-            pagePrevBtn.setDisable(false);
-            pageFirstBtn.setDisable(false);
+
             tableView.setItems(newTableDataList);
+            refreshPageBtnReCalc(treeNode, Integer.parseInt(defaultFetchRowTextField.getText()), treeNode.getCurrentPage(), pageFirstBtn, pagePrevBtn, pageNextBtn, pageLastBtn);
+
         });
-        pageLastBtn.setDisable(true);
-        pageFirstBtn.setDisable(true);
-        pagePrevBtn.setDisable(true);
-        if (tableDataList.size() < Integer.parseInt(defaultFetchRowTextField.getText())) {
-            pageNextBtn.setDisable(true);
-        } else {
-            pagePrevBtn.setDisable(true);
-        }
+
 //
         // 表数据行双击事件
         tableView.setOnMouseClicked(event -> {
@@ -520,6 +519,28 @@ public class HomeController {
             vBox.getChildren().add(hBox);
         }
         tableViewDataEditStage.show();
+    }
+
+    // 分页计算（当需要触发翻页按钮状态重新计算时触发）
+    private void refreshPageBtnReCalc(TreeNode currentTreeNode,
+                                      int limitRowValue,
+                                      int currentPage,
+                                      Button pageFirstBtn,
+                                      Button pagePrevBtn,
+                                      Button pageNextBtn,
+                                      Button pageLastBtn) {
+        //当前表数据行
+        int totalRows = currentTreeNode.getTableViewRowCount();
+        int totalPage = (int) Math.ceil((double) totalRows / limitRowValue);
+        boolean pageFirstBtnEnable = currentPage > 1;
+        boolean pagePrevBtnEnable = currentPage > 1;
+        boolean pageNextBtnEnable = currentPage < totalPage;
+        boolean pageLastBtnEnable = currentPage < totalPage;
+
+        pageFirstBtn.setDisable(!pageFirstBtnEnable);
+        pagePrevBtn.setDisable(!pagePrevBtnEnable);
+        pageNextBtn.setDisable(!pageNextBtnEnable);
+        pageLastBtn.setDisable(!pageLastBtnEnable);
     }
 
     // 内存监控任务
