@@ -40,6 +40,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import static io.github.alexkitc.conf.Config.*;
 
@@ -290,7 +294,14 @@ public class HomeController {
 
         tableView.setFixedCellSize(25);
         //获得表字段渲染
-        List<TreeNode> tableFieldList = treeNode.getTableFieldList(parent, treeNode);
+        Future<List<TreeNode>> tableFieldListFuture = CompletableFuture.supplyAsync(() -> treeNode.getTableFieldList(parent, treeNode),
+                Executors.newSingleThreadExecutor());
+        List<TreeNode> tableFieldList;
+        try {
+            tableFieldList = tableFieldListFuture.get();
+        } catch (InterruptedException | ExecutionException e) {
+            throw new RuntimeException(e);
+        }
         // 表头
         ObservableList<TableColumn<RowData, ?>> columns = FXCollections.observableArrayList();
         List<String> colNameList = new ArrayList<>();
@@ -809,9 +820,9 @@ public class HomeController {
         //基本的ToolTips
         memoryProgressbar.setTooltip(new Tooltip("当前堆+非堆已使用/已申请内存"));
 
-        Task<Double> memoryTask = new Task<>() {
+        Task<Void> memoryTask = new Task<>() {
             @Override
-            protected Double call() throws Exception {
+            protected Void call() throws Exception {
                 while (!isCancelled()) {
                     MemoryMXBean memoryMXBean = ManagementFactory.getMemoryMXBean();
 

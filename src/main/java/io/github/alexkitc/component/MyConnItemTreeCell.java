@@ -21,6 +21,8 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static io.github.alexkitc.conf.Config.APP_AUTHOR_ICO;
 import static io.github.alexkitc.conf.Config.FXML_NEW_CONN_FILE_PATH;
@@ -55,7 +57,14 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
                         switch (getTreeItem().getValue().getConnItem().getDbTypeEnum()) {
                             case MYSQL:
                             case REDIS: {
-                                List<TreeNode> dbList = getTreeItem().getValue().getDbList(getTreeItem().getValue());
+                                Future<List<TreeNode>> future = CompletableFuture.supplyAsync(() -> getTreeItem().getValue().getDbList(getTreeItem().getValue()),
+                                        Executors.newSingleThreadExecutor());
+                                List<TreeNode> dbList;
+                                try {
+                                    dbList = future.get();
+                                } catch (InterruptedException | ExecutionException e) {
+                                    throw new RuntimeException(e);
+                                }
                                 List<String> historyDbList = getTreeItem().getChildren()
                                         .stream()
                                         .map(item -> item.getValue().getName())
@@ -78,8 +87,15 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
                         }
 
                         break;
-                    case DB:
-                        List<TreeNode> tableList = getTreeItem().getValue().getTableList(getTreeItem().getValue());
+                    case DB: {
+                        CompletableFuture<List<TreeNode>> future = CompletableFuture.supplyAsync(() -> getTreeItem().getValue().getTableList(getTreeItem().getValue()),
+                                Executors.newVirtualThreadPerTaskExecutor());
+                        List<TreeNode> tableList;
+                        try {
+                            tableList = future.get();
+                        } catch (InterruptedException | ExecutionException e) {
+                            throw new RuntimeException(e);
+                        }
                         List<String> historyTableList = getTreeItem().getChildren()
                                 .stream()
                                 .map(item -> item.getValue().getName())
@@ -91,8 +107,17 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
                         }
                         getTreeItem().setExpanded(true);
                         break;
-                    case TABLE:
-                        List<TreeNode> tableFieldList = getTreeItem().getValue().getTableFieldList(getTreeItem().getParent().getValue(), getTreeItem().getValue());
+                    }
+
+                    case TABLE: {
+                        Future<List<TreeNode>> future = CompletableFuture.supplyAsync(() -> getTreeItem().getValue().getTableFieldList(getTreeItem().getParent().getValue(), getTreeItem().getValue()),
+                                Executors.newSingleThreadExecutor());
+                        List<TreeNode> tableFieldList;
+                        try {
+                            tableFieldList = future.get();
+                        } catch (InterruptedException | ExecutionException e) {
+                            throw new RuntimeException(e);
+                        }
                         List<String> historyTableFieldList = getTreeItem().getChildren()
                                 .stream()
                                 .map(item -> item.getValue().getName())
@@ -121,6 +146,8 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
                                 break;
                         }
                         break;
+                    }
+
                     case FIELD: {
                         //暂时字段类型仅针对redis方可点击
                         if (getTreeItem().getValue().getConnItem().getDbTypeEnum().equals(DbTypeEnum.REDIS)) {
