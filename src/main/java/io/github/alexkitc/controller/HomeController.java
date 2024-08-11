@@ -152,10 +152,10 @@ public class HomeController {
         treeNode.setCurrentPage(1);
 
         //初始化一个用于语法提示的whereByStackPane
-        StackPane whereByStackPane = new StackPane();
+        StackPane whereConditionStackPane = new StackPane();
         ListView<String> whereByListView = new ListView<>();
-        whereByStackPane.getChildren().add(whereByListView);
-        whereByStackPane.setVisible(false);
+        whereConditionStackPane.getChildren().add(whereByListView);
+        whereConditionStackPane.setVisible(false);
 
         //初始化一个用于语法提示的orderByStackPane
         StackPane orderByStackPane = new StackPane();
@@ -364,8 +364,8 @@ public class HomeController {
 
                 refreshPageBtnReCalc(treeNode, Integer.parseInt(defaultFetchRowTextField.getText()), treeNode.getCurrentPage(), pageFirstBtn, pagePrevBtn, pageNextBtn, pageLastBtn);
 
-                if (whereByStackPane.isVisible()) {
-                    whereByStackPane.setVisible(false);
+                if (whereConditionStackPane.isVisible()) {
+                    whereConditionStackPane.setVisible(false);
                 }
             }
 
@@ -373,13 +373,13 @@ public class HomeController {
             //当语法提示出现的时候，Tab按键和方向键可直接提供输入
             if (ev.getCode().equals(KeyCode.ESCAPE)) {
                 whereByListView.getItems().clear();
-                if (whereByStackPane.isVisible()) {
-                    whereByStackPane.setVisible(false);
+                if (whereConditionStackPane.isVisible()) {
+                    whereConditionStackPane.setVisible(false);
                 }
             } else if (ev.getCode().equals(KeyCode.TAB)) {
                 whereTextField.setText(whereByListView.getSelectionModel().getSelectedItem());
-                if (whereByStackPane.isVisible()) {
-                    whereByStackPane.setVisible(false);
+                if (whereConditionStackPane.isVisible()) {
+                    whereConditionStackPane.setVisible(false);
                 }
                 whereTextField.requestFocus();
             } else if (ev.getCode().equals(KeyCode.DOWN)) {
@@ -433,20 +433,20 @@ public class HomeController {
             if (!whereByListView.getItems().isEmpty()) {
                 whereByListView.getSelectionModel().selectFirst();
             }
-            if (!whereByStackPane.isVisible()) {
-                whereByStackPane.setVisible(true);
+            if (!whereConditionStackPane.isVisible()) {
+                whereConditionStackPane.setVisible(true);
             }
 
         });
-        mainDataContainer.getChildren().add(whereByStackPane);
-        AnchorPane.setTopAnchor(whereByStackPane, 96.0);
-        AnchorPane.setLeftAnchor(whereByStackPane, 62.0);
+        mainDataContainer.getChildren().add(whereConditionStackPane);
+        AnchorPane.setTopAnchor(whereConditionStackPane, 96.0);
+        AnchorPane.setLeftAnchor(whereConditionStackPane, 62.0);
 
         whereByListView.addEventFilter(KeyEvent.KEY_PRESSED, ev -> {
             if (ev.getCode().equals(KeyCode.ENTER) || ev.getCode().equals(KeyCode.TAB)) {
                 whereTextField.setText(whereByListView.getSelectionModel().getSelectedItem());
-                if (whereByStackPane.isVisible()) {
-                    whereByStackPane.setVisible(false);
+                if (whereConditionStackPane.isVisible()) {
+                    whereConditionStackPane.setVisible(false);
                 }
                 whereTextField.requestFocus();
             }
@@ -548,6 +548,16 @@ public class HomeController {
             tableView.setItems(newTableDataList);
             refreshPageBtnReCalc(treeNode, Integer.parseInt(defaultFetchRowTextField.getText()), treeNode.getCurrentPage(), pageFirstBtn, pagePrevBtn, pageNextBtn, pageLastBtn);
 
+        });
+
+        //tab切换语法提示框应当关闭
+        tabPane.getSelectionModel().selectedIndexProperty().addListener(ev -> {
+            if (whereConditionStackPane.isVisible()) {
+                whereConditionStackPane.setVisible(false);
+            }
+            if (orderByStackPane.isVisible()) {
+                orderByStackPane.setVisible(false);
+            }
         });
 
 //
