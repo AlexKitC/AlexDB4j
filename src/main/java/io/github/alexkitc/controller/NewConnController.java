@@ -11,6 +11,7 @@ import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.control.Tooltip;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
@@ -102,6 +103,7 @@ public class NewConnController {
 //                    break;
                 case MONGODB:
                     port.setText("27017");
+
                     break;
 //                case POSTGRESQL:
 //                    port.setText("5432");

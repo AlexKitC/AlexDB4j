@@ -25,10 +25,8 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
 import javafx.scene.input.KeyCode;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.Priority;
-import javafx.scene.layout.VBox;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.*;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
 
@@ -152,6 +150,18 @@ public class HomeController {
     // 新建mysql类型Tab+TabPane容纳表数据，含4部分：1.功能按钮，2.搜索，排序，3.数据tableView，4.执行语句
     public void addMysqlTabPaneOfData(TreeNode parent, TreeNode treeNode) {
         treeNode.setCurrentPage(1);
+
+        //初始化一个用于语法提示的whereByStackPane
+        StackPane whereByStackPane = new StackPane();
+        ListView<String> whereByListView = new ListView<>();
+        whereByStackPane.getChildren().add(whereByListView);
+        whereByStackPane.setVisible(false);
+
+        //初始化一个用于语法提示的orderByStackPane
+        StackPane orderByStackPane = new StackPane();
+        ListView<String> orderByListView = new ListView<>();
+        orderByStackPane.getChildren().add(orderByListView);
+        orderByStackPane.setVisible(false);
 
         // 首次新建
         if (tabPane == null) {
@@ -370,14 +380,69 @@ public class HomeController {
                 refreshPageBtnReCalc(treeNode, Integer.parseInt(defaultFetchRowTextField.getText()), treeNode.getCurrentPage(), pageFirstBtn, pagePrevBtn, pageNextBtn, pageLastBtn);
 
             }
+            //退出则隐藏语法提示面板
+            //当语法提示出现的时候，Tab按键和方向键可直接提供输入
+            if (ev.getCode().equals(KeyCode.ESCAPE)) {
+                orderByListView.getItems().clear();
+                if (orderByStackPane.isVisible()) {
+                    orderByStackPane.setVisible(false);
+                }
+            } else if (ev.getCode().equals(KeyCode.TAB)) {
+                orderbyTextField.setText(orderByListView.getSelectionModel().getSelectedItem());
+                if (orderByStackPane.isVisible()) {
+                    orderByStackPane.setVisible(false);
+                }
+                orderbyTextField.requestFocus();
+            } else if (ev.getCode().equals(KeyCode.DOWN)) {
+                orderByListView.requestFocus();
+            }
+
         });
 
-        // orderBy输入框监听输入事件
-        orderbyTextField.textProperty().addListener((ob, oldValue, newValue) -> {
+        // where输入框输入内容监听输入事件
+        whereTextField.textProperty().addListener((ob, oldValue, newValue) -> {
             List<String> optionList = colNameList.stream()
                     .filter(col -> col.contains(newValue) || col.contains(newValue.toLowerCase()))
+                    .distinct()
                     .toList();
-            System.out.println(optionList);
+            whereByListView.getItems().clear();
+            whereByListView.getItems().addAll(optionList);
+            whereByListView.getSelectionModel().selectFirst();
+
+        });
+        mainDataContainer.getChildren().add(whereByStackPane);
+        AnchorPane.setTopAnchor(whereByStackPane, 96.0);
+        AnchorPane.setLeftAnchor(whereByStackPane, 62.0);
+
+        // orderBy输入框输入内容监听输入事件
+        orderbyTextField.textProperty().addListener((ob, oldValue, newValue) -> {
+            List<String> optionList = colNameList.stream()
+                    .filter(col -> newValue != null && (col.contains(newValue) || col.contains(newValue.toLowerCase()) || col.contains(newValue.toUpperCase())))
+                    .distinct()
+                    .toList();
+            orderByListView.getItems().clear();
+            orderByListView.getItems().addAll(optionList);
+            if (!orderByListView.getItems().isEmpty()) {
+                orderByListView.getSelectionModel().selectFirst();
+            }
+            if (!orderByStackPane.isVisible()) {
+                orderByStackPane.setVisible(true);
+            }
+        });
+
+        mainDataContainer.getChildren().add(orderByStackPane);
+
+        AnchorPane.setTopAnchor(orderByStackPane, 96.0);
+        AnchorPane.setLeftAnchor(orderByStackPane, 464.0);
+
+        orderByListView.addEventFilter(KeyEvent.KEY_PRESSED, ev -> {
+            if (ev.getCode().equals(KeyCode.ENTER) || ev.getCode().equals(KeyCode.TAB)) {
+                orderbyTextField.setText(orderByListView.getSelectionModel().getSelectedItem());
+                if (orderByStackPane.isVisible()) {
+                    orderByStackPane.setVisible(false);
+                }
+                orderbyTextField.requestFocus();
+            }
         });
 
         // 分页事件
