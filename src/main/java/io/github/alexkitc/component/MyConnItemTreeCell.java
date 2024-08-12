@@ -154,6 +154,8 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
                                 getTreeItem().setExpanded(true);
                                 break;
                             case MONGODB:
+                                App.homeControllerInstance.addMysqlTabPaneOfData(getTreeItem().getParent().getValue(), getTreeItem().getValue());
+
                                 break;
                             default:
                                 break;

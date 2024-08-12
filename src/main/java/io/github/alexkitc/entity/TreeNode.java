@@ -1,8 +1,10 @@
 package io.github.alexkitc.entity;
 
+import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import com.mongodb.client.*;
-import com.mongodb.client.model.Accumulators;
-import com.mongodb.client.model.Aggregates;
 import io.github.alexkitc.conf.Config;
 import io.github.alexkitc.entity.enums.RedisKeyTypeEnum;
 import io.github.alexkitc.entity.enums.TreeNodeTypeEnum;
@@ -19,6 +21,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 
+import java.lang.reflect.Type;
 import java.sql.*;
 import java.util.*;
 
@@ -439,8 +442,9 @@ public class TreeNode {
                     if (!Objects.isNull(orderby) && !orderby.trim().isEmpty()) {
                         sql += " ORDER BY " + orderby;
                     }
+
                     if (Objects.nonNull(limitRows)) {
-                        sql += " LIMIT " + limitRows;
+                        sql += " LIMIT " + (currentTreeNode.getCurrentPage() - 1) * limitRows + ", " + limitRows;
                     }
 
                     ResultSet rs = stmt.executeQuery(sql);
@@ -563,60 +567,81 @@ public class TreeNode {
 
                 break;
             }
+            case MONGODB: {
+                try (MongoClient mongoClient = MongoClients.create("mongodb://" + currentTreeNode.getConnItem().getUsername() + ":" + currentTreeNode.getConnItem().getPassword() + "@" +currentTreeNode.getConnItem().getHost() + ":" +currentTreeNode.getConnItem().getPort())) {
+                    String databaseName = parent.getName();
+                    MongoDatabase database = mongoClient.getDatabase(databaseName);
+
+                    String collectionName = currentTreeNode.getName();
+                    MongoCollection<Document> collection = database.getCollection(collectionName);
+
+                    long countDocuments = collection.countDocuments();
+                    currentTreeNode.setTableViewRowCount(countDocuments);
+
+                    FindIterable<Document> documentFindIterable = collection.find();
+                    if (Objects.nonNull(limitRows)) {
+                        int start = (currentTreeNode.getCurrentPage() - 1) * limitRows;
+                        documentFindIterable.skip(start).limit(limitRows);
+                    }
+
+                    List<Document> documents = documentFindIterable.into(new ArrayList<>());
+
+
+
+                    // 打印查询结果
+                    for (Document document : documents) {
+                        String documentJson = String.valueOf(convertDocumentToJson(document));
+                        Gson gson = new Gson();
+                        Type mapType = new TypeToken<Map<String, Object>>(){}.getType();
+                        Map<String, Object> map = gson.fromJson(documentJson, mapType);
+                        RowData rowData = new RowData();
+                        for (TableColumn<RowData, ?> column : columns) {
+
+                            String columnName = column.getText();
+                            Object value = map.get(columnName);
+                            rowData.put(columnName, value);
+                        }
+                        rowList.add(rowData);
+                    }
+
+                } catch (Exception e) {
+                    $.warning("MongoException", e.getMessage());
+                }
+
+                break;
+            }
             default:
                 break;
         }
 
     }
 
+    // mongo处理document返回的json
+    private static String convertDocumentToJson(Document document) {
+        Gson gson = new Gson();
+        JsonObject jsonObject = new JsonObject();
 
-    public ObservableList<RowData> triggerPageEvent(TreeNode parent,
-                                                    TreeNode currentTreeNode,
-                                                    ObservableList<TableColumn<RowData, ?>> columns,
-                                                    ObservableList<RowData> rowList,
-                                                    String whereCondition,
-                                                    String orderby,
-                                                    Integer limitRows,
-                                                    Text sqlText) {
-        String url = "jdbc:mysql://" + currentTreeNode.getConnItem().getHost()
-                + ":" + currentTreeNode.getConnItem().getPort()
-                + "/" + parent.getName()
-                + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
-        try {
-            Class.forName("com.mysql.cj.jdbc.Driver");
-            Connection conn = DriverManager.getConnection(url, currentTreeNode.getConnItem().getUsername(), currentTreeNode.getConnItem().getPassword());
-            Statement stmt = conn.createStatement();
-            String sql = "SELECT * FROM " + currentTreeNode.getName();
-
-            if (!Objects.isNull(whereCondition) && !whereCondition.trim().isEmpty()) {
-                sql += " WHERE " + whereCondition;
-            }
-            if (!Objects.isNull(orderby) && !orderby.trim().isEmpty()) {
-                sql += " ORDER BY " + orderby;
-            }
-
-            if (Objects.nonNull(limitRows)) {
-                sql += " LIMIT " + String.valueOf((currentTreeNode.getCurrentPage() - 1) * limitRows) + ", " + limitRows;
-            }
-
-            ResultSet rs = stmt.executeQuery(sql);
-            sqlText.setText(sql);
-            while (rs.next()) {
-                RowData rowData = new RowData();
-                for (TableColumn<RowData, ?> column : columns) {
-                    String columnName = column.getText();
-                    Object value = rs.getObject(columnName);
-                    rowData.put(columnName, value);
+        for (String key : document.keySet()) {
+            Object value = document.get(key);
+//            if (value instanceof Document) {
+//                // 递归处理嵌套的 Document
+//                jsonObject.add(key, (JsonElement) convertDocumentToJson((Document) value));
+//            } else
+                if (value instanceof List) {
+                // 处理 List 类型
+                List<?> list = (List<?>) value;
+                JsonArray jsonArray = new JsonArray();
+                for (Object item : list) {
+                    jsonArray.add(gson.toJsonTree(item));
                 }
-                rowList.add(rowData);
+                jsonObject.add(key, jsonArray);
+            } else {
+                // 处理其他类型
+                jsonObject.add(key, gson.toJsonTree(value));
             }
-
-            rs.close();
-            stmt.close();
-            conn.close();
-            return rowList;
-        } catch (ClassNotFoundException | SQLException e) {
-            throw new RuntimeException(e);
         }
+
+        return jsonObject.toString();
     }
+
 }

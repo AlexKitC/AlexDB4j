@@ -501,7 +501,7 @@ public class HomeController {
         pageFirstBtn.setOnAction(ev -> {
             treeNode.setCurrentPage(1);
             ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
-            treeNode.triggerPageEvent(parent,
+            treeNode.getTableRowDataList(parent,
                     treeNode,
                     columns,
                     newTableDataList,
@@ -516,7 +516,7 @@ public class HomeController {
         pagePrevBtn.setOnAction(ev -> {
             treeNode.setCurrentPage(treeNode.getCurrentPage() == 1 ? 1 : treeNode.getCurrentPage() - 1);
             ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
-            treeNode.triggerPageEvent(parent,
+            treeNode.getTableRowDataList(parent,
                     treeNode,
                     columns,
                     newTableDataList,
@@ -532,7 +532,7 @@ public class HomeController {
         pageNextBtn.setOnAction(ev -> {
             treeNode.setCurrentPage(treeNode.getCurrentPage() + 1);
             ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
-            treeNode.triggerPageEvent(parent,
+            treeNode.getTableRowDataList(parent,
                     treeNode,
                     columns,
                     newTableDataList,
@@ -550,7 +550,7 @@ public class HomeController {
         pageLastBtn.setOnAction(ev -> {
             treeNode.setCurrentPage((int) Math.ceil((double) treeNode.getTableViewRowCount() / Integer.parseInt(defaultFetchRowTextField.getText())));
             ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
-            treeNode.triggerPageEvent(parent,
+            treeNode.getTableRowDataList(parent,
                     treeNode,
                     columns,
                     newTableDataList,
@@ -802,7 +802,7 @@ public class HomeController {
                                       Button pageNextBtn,
                                       Button pageLastBtn) {
         //当前表数据行
-        long totalRows = currentTreeNode.getTableViewRowCount();
+        long totalRows = currentTreeNode.getTableViewRowCount() == null ? 0 : currentTreeNode.getTableViewRowCount();
         int totalPage = (int) Math.ceil((double) totalRows / limitRowValue);
         boolean pageFirstBtnEnable = currentPage > 1;
         boolean pagePrevBtnEnable = currentPage > 1;
