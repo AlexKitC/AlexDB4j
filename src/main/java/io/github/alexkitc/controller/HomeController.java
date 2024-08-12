@@ -256,6 +256,12 @@ public class HomeController {
         row4.setPadding(new Insets(0, 0, 0, 6));
         row4.setAlignment(Pos.CENTER_LEFT);
 
+        // mongo暂不支持搜索和排序
+        if (treeNode.getConnItem().getDbTypeEnum().equals(DbTypeEnum.MONGODB)) {
+            whereTextField.setDisable(true);
+            orderbyTextField.setDisable(true);
+        }
+
         vBox.getChildren().addAll(row1, row2, tableView, row4);
 
         // TabPane锚点
