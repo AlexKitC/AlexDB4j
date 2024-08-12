@@ -386,22 +386,21 @@ public class TreeNode {
                     MongoCollection<Document> collection = database.getCollection(collectionName);
 
                     Set<String> fieldNames = new HashSet<>();
-                    List<Document> results = collection.aggregate(Arrays.asList(
-                            Aggregates.project(new Document().append("_id", 1).append("$$ROOT", 1)),
-                            Aggregates.unwind(String.valueOf(new Document("$ROOT", 1))),
-                            Aggregates.group(new Document("_id", "$_id").append("fields", Accumulators.push("$CURRENT", "$CURRENT")))
-                    )).into(new ArrayList<>());
-
-                    // 处理聚合结果
-                    for (Document result : results) {
-                        Document fieldsDoc = (Document) result.get("fields");
-                        for (String fieldName : fieldsDoc.keySet()) {
-                            if (!fieldName.equals("_id")) {
-                                fieldNames.add(fieldName);
-                            }
-                        }
+                    for (Document doc : collection.find()) {
+                        fieldNames.addAll(doc.keySet());
                     }
-                    System.out.println(fieldNames);
+
+                    for (String fieldName : fieldNames) {
+                        TreeNode tableItem = new TreeNode();
+                        tableItem.setName(fieldName);
+                        tableItem.setTypeAndLength(null);
+                        tableItem.setTreeNodeTypeEnum(TreeNodeTypeEnum.FIELD);
+                        tableItem.setIcon(Config.CONN_ICON_FIELD_PATH0);
+                        tableItem.setConnItem(currentTreeNode.getConnItem());
+                        tableFieldList.add(tableItem);
+                    }
+
+                    return tableFieldList;
                 } catch (Exception e) {
                     $.warning("MongoException", e.getMessage());
                 }
