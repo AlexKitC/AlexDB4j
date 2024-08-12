@@ -1,5 +1,9 @@
 package io.github.alexkitc.entity;
 
+import com.mongodb.client.MongoClient;
+import com.mongodb.client.MongoClients;
+import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.MongoIterable;
 import io.github.alexkitc.conf.Config;
 import io.github.alexkitc.entity.enums.RedisKeyTypeEnum;
 import io.github.alexkitc.entity.enums.TreeNodeTypeEnum;
@@ -9,6 +13,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.text.Text;
 import lombok.Data;
 import lombok.experimental.Accessors;
+import org.bson.Document;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -174,6 +179,27 @@ public class TreeNode {
 
                 break;
             }
+            case MONGODB: {
+                List<TreeNode> dbList = new ArrayList<>();
+                try (MongoClient mongoClient = MongoClients.create("mongodb://" + currentTreeNode.getConnItem().getUsername() + ":" + currentTreeNode.getConnItem().getPassword() + "@" +currentTreeNode.getConnItem().getHost() + ":" +currentTreeNode.getConnItem().getPort())) {
+                    // 获取所有数据库的名字
+                    MongoIterable<String> mongoIterable = mongoClient.listDatabaseNames();
+                    List<String> dbNameList = new ArrayList<>();
+                    mongoIterable.into(dbNameList);
+                    for (String dbName : dbNameList) {
+                        TreeNode treeNode = new TreeNode();
+                        treeNode.setTreeNodeTypeEnum(TreeNodeTypeEnum.DB);
+                        treeNode.setIcon(Config.CONN_ICON_DB_MONGO_PATH0);
+                        treeNode.setConnItem(currentTreeNode.getConnItem());
+                        treeNode.setName(dbName);
+                        dbList.add(treeNode);
+                    }
+                    return dbList;
+                } catch (Exception e) {
+                    $.warning("MongoException", e.getMessage());
+                }
+                break;
+            }
             default: {
                 break;
             }
@@ -226,6 +252,37 @@ public class TreeNode {
                 }
 
                 return tableList;
+            }
+            case MONGODB: {
+                List<TreeNode> tableList = new ArrayList<>();
+                try (MongoClient mongoClient = MongoClients.create("mongodb://" + currentTreeNode.getConnItem().getUsername() + ":" + currentTreeNode.getConnItem().getPassword() + "@" +currentTreeNode.getConnItem().getHost() + ":" +currentTreeNode.getConnItem().getPort())) {
+                    String databaseName = currentTreeNode.getName();
+                    MongoDatabase database = mongoClient.getDatabase(databaseName);
+
+                    MongoIterable<Document> collectionsInfo = database.listCollections();
+
+                    // 将集合信息转换为 List
+                    List<Document> collectionsInfoList = new ArrayList<>();
+                    collectionsInfo.into(collectionsInfoList);
+
+                    // 提取集合名称
+                    List<String> collectionNames = new ArrayList<>();
+                    for (Document collectionInfo : collectionsInfoList) {
+                        String name = collectionInfo.getString("name");
+                        collectionNames.add(name);
+                    }
+                    for (String tableName : collectionNames) {
+                        TreeNode treeNode = new TreeNode();
+                        treeNode.setTreeNodeTypeEnum(TreeNodeTypeEnum.DB);
+                        treeNode.setIcon(Config.CONN_ICON_DB_MONGO_PATH0);
+                        treeNode.setConnItem(currentTreeNode.getConnItem());
+                        treeNode.setName(tableName);
+                        tableList.add(treeNode);
+                    }
+                    return tableList;
+                } catch (Exception e) {
+                    $.warning("MongoException", e.getMessage());
+                }
             }
             default:
                 break;

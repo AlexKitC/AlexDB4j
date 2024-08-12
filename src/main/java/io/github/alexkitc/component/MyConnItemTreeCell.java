@@ -56,6 +56,7 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
                         // mysql
                         switch (getTreeItem().getValue().getConnItem().getDbTypeEnum()) {
                             case MYSQL:
+                            case MONGODB:
                             case REDIS: {
                                 Future<List<TreeNode>> future = CompletableFuture.supplyAsync(() -> getTreeItem().getValue().getDbList(getTreeItem().getValue()),
                                         Executors.newVirtualThreadPerTaskExecutor());
@@ -122,6 +123,9 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
                                 .stream()
                                 .map(item -> item.getValue().getName())
                                 .toList();
+                        if (tableFieldList == null) {
+                            return;
+                        }
                         for (TreeNode tableField : tableFieldList) {
                             if (!historyTableFieldList.contains(tableField.getName())) {
                                 getTreeItem().getChildren().add(new TreeItem<>(new TreeNode(tableField.getName(), TreeNodeTypeEnum.FIELD, Config.CONN_ICON_FIELD_PATH0, tableField.getConnItem(), tableField.getTypeAndLength())));
