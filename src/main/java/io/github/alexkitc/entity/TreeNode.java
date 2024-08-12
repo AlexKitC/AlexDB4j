@@ -1,9 +1,8 @@
 package io.github.alexkitc.entity;
 
-import com.mongodb.client.MongoClient;
-import com.mongodb.client.MongoClients;
-import com.mongodb.client.MongoDatabase;
-import com.mongodb.client.MongoIterable;
+import com.mongodb.client.*;
+import com.mongodb.client.model.Accumulators;
+import com.mongodb.client.model.Aggregates;
 import io.github.alexkitc.conf.Config;
 import io.github.alexkitc.entity.enums.RedisKeyTypeEnum;
 import io.github.alexkitc.entity.enums.TreeNodeTypeEnum;
@@ -21,10 +20,7 @@ import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @author alexKitc
@@ -87,7 +83,7 @@ public class TreeNode {
                         this.icon = Config.CONN_ICON_DB_REDIS_PATH0;
                         break;
                     case MONGODB:
-                        this.icon = Config.CONN_ICON_DB_MONGO_PATH0;
+                        this.icon = Config.CONN_ICON_DB_MONGO_PATH1;
                         break;
                     default:
                         this.icon = icon;
@@ -189,7 +185,7 @@ public class TreeNode {
                     for (String dbName : dbNameList) {
                         TreeNode treeNode = new TreeNode();
                         treeNode.setTreeNodeTypeEnum(TreeNodeTypeEnum.DB);
-                        treeNode.setIcon(Config.CONN_ICON_DB_MONGO_PATH0);
+                        treeNode.setIcon(Config.CONN_ICON_DB_MONGO_PATH1);
                         treeNode.setConnItem(currentTreeNode.getConnItem());
                         treeNode.setName(dbName);
                         dbList.add(treeNode);
@@ -274,7 +270,7 @@ public class TreeNode {
                     for (String tableName : collectionNames) {
                         TreeNode treeNode = new TreeNode();
                         treeNode.setTreeNodeTypeEnum(TreeNodeTypeEnum.DB);
-                        treeNode.setIcon(Config.CONN_ICON_DB_MONGO_PATH0);
+                        treeNode.setIcon(Config.CONN_ICON_DB_MONGO_PATH1);
                         treeNode.setConnItem(currentTreeNode.getConnItem());
                         treeNode.setName(tableName);
                         tableList.add(treeNode);
@@ -283,6 +279,7 @@ public class TreeNode {
                 } catch (Exception e) {
                     $.warning("MongoException", e.getMessage());
                 }
+                break;
             }
             default:
                 break;
@@ -378,6 +375,40 @@ public class TreeNode {
                 }
 
                 return keyList;
+            }
+            case MONGODB: {
+                List<TreeNode> tableFieldList = new ArrayList<>();
+                try (MongoClient mongoClient = MongoClients.create("mongodb://" + currentTreeNode.getConnItem().getUsername() + ":" + currentTreeNode.getConnItem().getPassword() + "@" +currentTreeNode.getConnItem().getHost() + ":" +currentTreeNode.getConnItem().getPort())) {
+                    String databaseName = parent.getName();
+                    MongoDatabase database = mongoClient.getDatabase(databaseName);
+
+                    String collectionName = currentTreeNode.getName();
+                    MongoCollection<Document> collection = database.getCollection(collectionName);
+
+                    Set<String> fieldNames = new HashSet<>();
+                    List<Document> results = collection.aggregate(Arrays.asList(
+                            Aggregates.project(new Document().append("_id", 1).append("$$ROOT", 1)),
+                            Aggregates.unwind(String.valueOf(new Document("$ROOT", 1))),
+                            Aggregates.group(new Document("_id", "$_id").append("fields", Accumulators.push("$CURRENT", "$CURRENT")))
+                    )).into(new ArrayList<>());
+
+                    // 处理聚合结果
+                    for (Document result : results) {
+                        Document fieldsDoc = (Document) result.get("fields");
+                        for (String fieldName : fieldsDoc.keySet()) {
+                            if (!fieldName.equals("_id")) {
+                                fieldNames.add(fieldName);
+                            }
+                        }
+                    }
+                    System.out.println(fieldNames);
+                } catch (Exception e) {
+                    $.warning("MongoException", e.getMessage());
+                }
+                break;
+            }
+            default: {
+                break;
             }
         }
         return null;

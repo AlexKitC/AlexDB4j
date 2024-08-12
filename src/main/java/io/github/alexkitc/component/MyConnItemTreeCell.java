@@ -21,8 +21,10 @@ import javafx.stage.Stage;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
-import java.util.concurrent.*;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import static io.github.alexkitc.conf.Config.APP_AUTHOR_ICO;
 import static io.github.alexkitc.conf.Config.FXML_NEW_CONN_FILE_PATH;
@@ -111,14 +113,21 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
                     }
 
                     case TABLE: {
-                        Future<List<TreeNode>> future = CompletableFuture.supplyAsync(() -> getTreeItem().getValue().getTableFieldList(getTreeItem().getParent().getValue(), getTreeItem().getValue()),
-                                Executors.newVirtualThreadPerTaskExecutor());
                         List<TreeNode> tableFieldList;
-                        try {
-                            tableFieldList = future.get();
-                        } catch (InterruptedException | ExecutionException e) {
-                            throw new RuntimeException(e);
+                        // mongo不允许在用户线程中执行
+                        if (getTreeItem().getValue().getConnItem().getDbTypeEnum().equals(DbTypeEnum.MONGODB)) {
+                            tableFieldList = getTreeItem().getValue().getTableFieldList(getTreeItem().getParent().getValue(), getTreeItem().getValue());
+                        } else {
+                            Future<List<TreeNode>> future = CompletableFuture.supplyAsync(() -> getTreeItem().getValue().getTableFieldList(getTreeItem().getParent().getValue(), getTreeItem().getValue()),
+                                    Executors.newVirtualThreadPerTaskExecutor());
+
+                            try {
+                                tableFieldList = future.get();
+                            } catch (InterruptedException | ExecutionException e) {
+                                throw new RuntimeException(e);
+                            }
                         }
+
                         List<String> historyTableFieldList = getTreeItem().getChildren()
                                 .stream()
                                 .map(item -> item.getValue().getName())
