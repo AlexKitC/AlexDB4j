@@ -180,7 +180,7 @@ public class TreeNode {
             }
             case MONGODB: {
                 List<TreeNode> dbList = new ArrayList<>();
-                try (MongoClient mongoClient = MongoClients.create("mongodb://" + currentTreeNode.getConnItem().getUsername() + ":" + currentTreeNode.getConnItem().getPassword() + "@" +currentTreeNode.getConnItem().getHost() + ":" +currentTreeNode.getConnItem().getPort())) {
+                try (MongoClient mongoClient = MongoClients.create("mongodb://" + currentTreeNode.getConnItem().getUsername() + ":" + currentTreeNode.getConnItem().getPassword() + "@" + currentTreeNode.getConnItem().getHost() + ":" + currentTreeNode.getConnItem().getPort())) {
                     // 获取所有数据库的名字
                     MongoIterable<String> mongoIterable = mongoClient.listDatabaseNames();
                     List<String> dbNameList = new ArrayList<>();
@@ -254,7 +254,7 @@ public class TreeNode {
             }
             case MONGODB: {
                 List<TreeNode> tableList = new ArrayList<>();
-                try (MongoClient mongoClient = MongoClients.create("mongodb://" + currentTreeNode.getConnItem().getUsername() + ":" + currentTreeNode.getConnItem().getPassword() + "@" +currentTreeNode.getConnItem().getHost() + ":" +currentTreeNode.getConnItem().getPort())) {
+                try (MongoClient mongoClient = MongoClients.create("mongodb://" + currentTreeNode.getConnItem().getUsername() + ":" + currentTreeNode.getConnItem().getPassword() + "@" + currentTreeNode.getConnItem().getHost() + ":" + currentTreeNode.getConnItem().getPort())) {
                     String databaseName = currentTreeNode.getName();
                     MongoDatabase database = mongoClient.getDatabase(databaseName);
 
@@ -381,7 +381,7 @@ public class TreeNode {
             }
             case MONGODB: {
                 List<TreeNode> tableFieldList = new ArrayList<>();
-                try (MongoClient mongoClient = MongoClients.create("mongodb://" + currentTreeNode.getConnItem().getUsername() + ":" + currentTreeNode.getConnItem().getPassword() + "@" +currentTreeNode.getConnItem().getHost() + ":" +currentTreeNode.getConnItem().getPort())) {
+                try (MongoClient mongoClient = MongoClients.create("mongodb://" + currentTreeNode.getConnItem().getUsername() + ":" + currentTreeNode.getConnItem().getPassword() + "@" + currentTreeNode.getConnItem().getHost() + ":" + currentTreeNode.getConnItem().getPort())) {
                     String databaseName = parent.getName();
                     MongoDatabase database = mongoClient.getDatabase(databaseName);
 
@@ -568,7 +568,7 @@ public class TreeNode {
                 break;
             }
             case MONGODB: {
-                try (MongoClient mongoClient = MongoClients.create("mongodb://" + currentTreeNode.getConnItem().getUsername() + ":" + currentTreeNode.getConnItem().getPassword() + "@" +currentTreeNode.getConnItem().getHost() + ":" +currentTreeNode.getConnItem().getPort())) {
+                try (MongoClient mongoClient = MongoClients.create("mongodb://" + currentTreeNode.getConnItem().getUsername() + ":" + currentTreeNode.getConnItem().getPassword() + "@" + currentTreeNode.getConnItem().getHost() + ":" + currentTreeNode.getConnItem().getPort())) {
                     String databaseName = parent.getName();
                     MongoDatabase database = mongoClient.getDatabase(databaseName);
 
@@ -586,13 +586,12 @@ public class TreeNode {
 
                     List<Document> documents = documentFindIterable.into(new ArrayList<>());
 
-
-
                     // 打印查询结果
                     for (Document document : documents) {
                         String documentJson = String.valueOf(convertDocumentToJson(document));
                         Gson gson = new Gson();
-                        Type mapType = new TypeToken<Map<String, Object>>(){}.getType();
+                        Type mapType = new TypeToken<Map<String, Object>>() {
+                        }.getType();
                         Map<String, Object> map = gson.fromJson(documentJson, mapType);
                         RowData rowData = new RowData();
                         for (TableColumn<RowData, ?> column : columns) {
@@ -603,6 +602,8 @@ public class TreeNode {
                         }
                         rowList.add(rowData);
                     }
+
+                    sqlText.setText("db." + collectionName + ".find({})." + "skip(" + (currentTreeNode.getCurrentPage() - 1) * limitRows + ").limit(" + limitRows + ")");
 
                 } catch (Exception e) {
                     $.warning("MongoException", e.getMessage());
@@ -627,7 +628,7 @@ public class TreeNode {
 //                // 递归处理嵌套的 Document
 //                jsonObject.add(key, (JsonElement) convertDocumentToJson((Document) value));
 //            } else
-                if (value instanceof List) {
+            if (value instanceof List) {
                 // 处理 List 类型
                 List<?> list = (List<?>) value;
                 JsonArray jsonArray = new JsonArray();
