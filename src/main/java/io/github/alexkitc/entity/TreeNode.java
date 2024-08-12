@@ -63,6 +63,9 @@ public class TreeNode {
 
     // 当前分页页码
     private int currentPage;
+    
+    // 当前表的主键
+    private String pkName;
 
     public TreeNode() {
     }
@@ -304,6 +307,13 @@ public class TreeNode {
                     Connection conn = DriverManager.getConnection(url, currentTreeNode.getConnItem().getUsername(), currentTreeNode.getConnItem().getPassword());
                     DatabaseMetaData metaData = conn.getMetaData();
                     ResultSet columns = metaData.getColumns(parent.getName(), parent.getName(), currentTreeNode.getName(), null);
+
+                    //获取主键
+                    ResultSet primaryKeys = metaData.getPrimaryKeys(parent.getName(), parent.getName(), currentTreeNode.getName());
+                    while (primaryKeys.next()) {
+                        currentTreeNode.setPkName(primaryKeys.getString("COLUMN_NAME"));
+                    }
+
                     while (columns.next()) {
                         int dataType = columns.getInt("DATA_TYPE");
                         String columnName = columns.getString("COLUMN_NAME");
