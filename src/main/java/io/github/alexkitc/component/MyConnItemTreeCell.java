@@ -58,7 +58,7 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
                             case MYSQL:
                             case REDIS: {
                                 Future<List<TreeNode>> future = CompletableFuture.supplyAsync(() -> getTreeItem().getValue().getDbList(getTreeItem().getValue()),
-                                        Executors.newSingleThreadExecutor());
+                                        Executors.newVirtualThreadPerTaskExecutor());
                                 List<TreeNode> dbList;
                                 try {
                                     dbList = future.get();
@@ -111,7 +111,7 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
 
                     case TABLE: {
                         Future<List<TreeNode>> future = CompletableFuture.supplyAsync(() -> getTreeItem().getValue().getTableFieldList(getTreeItem().getParent().getValue(), getTreeItem().getValue()),
-                                Executors.newSingleThreadExecutor());
+                                Executors.newVirtualThreadPerTaskExecutor());
                         List<TreeNode> tableFieldList;
                         try {
                             tableFieldList = future.get();

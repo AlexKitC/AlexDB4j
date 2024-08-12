@@ -295,7 +295,7 @@ public class HomeController {
         tableView.setFixedCellSize(25);
         //获得表字段渲染
         Future<List<TreeNode>> tableFieldListFuture = CompletableFuture.supplyAsync(() -> treeNode.getTableFieldList(parent, treeNode),
-                Executors.newSingleThreadExecutor());
+                Executors.newVirtualThreadPerTaskExecutor());
         List<TreeNode> tableFieldList;
         try {
             tableFieldList = tableFieldListFuture.get();
