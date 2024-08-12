@@ -10,6 +10,7 @@ import javafx.scene.text.Text;
 import lombok.Data;
 import lombok.experimental.Accessors;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
@@ -293,20 +294,25 @@ public class TreeNode {
                         ScanResult<String> scanResult = jedis.scan(cursor, params);
                         cursor = scanResult.getCursor();
 
+                        Pipeline pipeline = jedis.pipelined();
                         for (String key : scanResult.getResult()) {
-                            // 获取键的类型
-                            String type = jedis.type(key);
+                            pipeline.type(key);
+                        }
+
+                        List<Object> types = pipeline.syncAndReturnAll();
+
+                        for (int i = 0; i < types.size(); i++) {
                             // 仅返回当前类型key数据
-                            if (currentTreeNode.getName().toLowerCase().equals(type)) {
+                            if (currentTreeNode.getName().toLowerCase().equals(types.get(i))) {
                                 TreeNode keyItem = new TreeNode();
-                                keyItem.setName(key);
+                                keyItem.setName(scanResult.getResult().get(i));
                                 keyItem.setTreeNodeTypeEnum(TreeNodeTypeEnum.FIELD);
                                 keyItem.setConnItem(currentTreeNode.getConnItem());
                                 keyItem.setIcon(Config.CONN_ICON_FIELD_PATH0);
                                 keyList.add(keyItem);
                             }
-
                         }
+
                     } while (!cursor.equals("0"));
 
                     // 同时设置总的key count值
