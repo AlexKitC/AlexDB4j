@@ -63,7 +63,7 @@ public class TreeNode {
 
     // 当前分页页码
     private int currentPage;
-    
+
     // 当前表的主键
     private String pkName;
 
@@ -657,6 +657,38 @@ public class TreeNode {
         }
 
         return jsonObject.toString();
+    }
+
+    // 更新数据
+    public void updateRowField(TreeNode parent, TreeNode treeNode, String pkValue, String key, String value) {
+        switch (treeNode.getConnItem().getDbTypeEnum()) {
+            case MYSQL: {
+                String url = "jdbc:mysql://" + treeNode.getConnItem().getHost()
+                        + ":" + treeNode.getConnItem().getPort()
+                        + "/" + parent.getName()
+                        + "?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC";
+                try {
+                    Class.forName("com.mysql.cj.jdbc.Driver");
+                    Connection conn = DriverManager.getConnection(url, treeNode.getConnItem().getUsername(), treeNode.getConnItem().getPassword());
+                    Statement stmt = conn.createStatement();
+                    String sql = "UPDATE " + treeNode.getName() + " SET " + key + "='" + value + "' WHERE " + treeNode.getPkName() + "=" + pkValue;
+                    int effectRows = stmt.executeUpdate(sql);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                break;
+
+            }
+            case MONGODB: {
+                break;
+            }
+            case REDIS: {
+                break;
+            }
+            default: {
+                break;
+            }
+        }
     }
 
 }

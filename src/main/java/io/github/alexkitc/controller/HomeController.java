@@ -790,6 +790,7 @@ public class HomeController {
                             if (hBox.getChildren().stream().noneMatch(child -> child instanceof Button)) {
                                 hBox.getChildren().add(updateBtn);
                             }
+                            updateRowDataTrigger(updateBtn, treeNode, dataMap.get(treeNode.getPkName()), entry.getKey(), newVal);
                         }
                     });
 
@@ -805,6 +806,7 @@ public class HomeController {
                             if (hBox.getChildren().stream().noneMatch(child -> child instanceof Button)) {
                                 hBox.getChildren().add(updateBtn);
                             }
+                            updateRowDataTrigger(updateBtn, treeNode, dataMap.get(treeNode.getPkName()), entry.getKey(), newVal);
                         }
                     });
                 }
@@ -826,6 +828,7 @@ public class HomeController {
                         if (hBox.getChildren().stream().noneMatch(child -> child instanceof Button)) {
                             hBox.getChildren().add(updateBtn);
                         }
+                        updateRowDataTrigger(updateBtn, treeNode, dataMap.get(treeNode.getPkName()), entry.getKey(), newVal);
                     }
                 });
             }
@@ -835,6 +838,24 @@ public class HomeController {
             vBox.getChildren().add(hBox);
         }
         tableViewDataEditStage.show();
+    }
+
+    //更新按钮触发逻辑
+    private void updateRowDataTrigger(Button updateButton,
+                                      TreeNode parent,
+                                      TreeNode treeNode,
+                                      String pkValue,
+                                      String key,
+                                      String value) {
+        updateButton.setOnMouseClicked(ev -> {
+            //获取当前行数据主键
+            String pkName = treeNode.getPkName();
+            if (pkName == null || pkName.isEmpty()) {
+                $.warning("提醒", "当前暂不支持缺乏主键的表数据更新");
+                return;
+            }
+            treeNode.updateRowField(parent, treeNode, pkValue, key ,value);
+        });
     }
 
     // 分页计算（当需要触发翻页按钮状态重新计算时触发）
