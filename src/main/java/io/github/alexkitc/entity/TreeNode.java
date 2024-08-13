@@ -392,6 +392,10 @@ public class TreeNode {
             case MONGODB: {
                 List<TreeNode> tableFieldList = new ArrayList<>();
                 try (MongoClient mongoClient = MongoClients.create("mongodb://" + currentTreeNode.getConnItem().getUsername() + ":" + currentTreeNode.getConnItem().getPassword() + "@" + currentTreeNode.getConnItem().getHost() + ":" + currentTreeNode.getConnItem().getPort())) {
+
+                    //设置主键
+                    currentTreeNode.setPkName("_id");
+
                     String databaseName = parent.getName();
                     MongoDatabase database = mongoClient.getDatabase(databaseName);
 

@@ -812,6 +812,10 @@ public class HomeController {
 
             } else {
                 TextField textField = new TextField(entry.getValue());
+                //主键禁止编辑
+                if (entry.getKey().equals(treeNode.getPkName())) {
+                    textField.setDisable(true);
+                }
                 textField.setPrefWidth(APP_DATA_EDIT_WIDTH - 450);
                 hBox.getChildren().add(textField);
 
