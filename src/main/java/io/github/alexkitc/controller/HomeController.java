@@ -763,12 +763,14 @@ public class HomeController {
         tableViewDataEditStage.setScene(tableViewDataEditScene);
         tableViewDataEditStage.getIcons().add(new Image(APP_AUTHOR_ICO));
 
+        // 绘制key-value
         for (Map.Entry<String, String> entry : dataMap.entrySet()) {
             HBox hBox = new HBox();
             VBox.setVgrow(hBox, Priority.ALWAYS);
             Label columnName = new Label(entry.getKey());
             columnName.setMinWidth(200.0);
             columnName.setPadding(new Insets(0, 0, 0, 5));
+            hBox.setSpacing(10.0);
             hBox.getChildren().add(columnName);
 
             if (entry.getValue().startsWith("[") || entry.getValue().startsWith("{")) {
@@ -778,20 +780,52 @@ public class HomeController {
                     int initialRowCount = json.split("\n").length;
                     TextArea textArea = new TextArea((json));
                     textArea.setPrefRowCount(initialRowCount);
-                    textArea.setPrefWidth(APP_DATA_EDIT_WIDTH - 250);
+                    textArea.setPrefWidth(APP_DATA_EDIT_WIDTH - 450);
                     hBox.getChildren().add(textArea);
+
+                    textArea.textProperty().addListener((ob, oldVal, newVal) -> {
+                        //如果值改变则创建更新按钮
+                        if (!newVal.equals(oldVal)) {
+                            Button updateBtn = new Button("更新");
+                            if (hBox.getChildren().stream().noneMatch(child -> child instanceof Button)) {
+                                hBox.getChildren().add(updateBtn);
+                            }
+                        }
+                    });
+
                 } catch (Exception e) {
                     TextField textField = new TextField(entry.getValue());
-                    textField.setPrefWidth(APP_DATA_EDIT_WIDTH - 250);
+                    textField.setPrefWidth(APP_DATA_EDIT_WIDTH - 450);
                     hBox.getChildren().add(textField);
+
+                    textField.textProperty().addListener((ob, oldVal, newVal) -> {
+                        //如果值改变则创建更新按钮
+                        if (!newVal.equals(oldVal)) {
+                            Button updateBtn = new Button("更新");
+                            if (hBox.getChildren().stream().noneMatch(child -> child instanceof Button)) {
+                                hBox.getChildren().add(updateBtn);
+                            }
+                        }
+                    });
                 }
 
 
             } else {
                 TextField textField = new TextField(entry.getValue());
-                textField.setPrefWidth(APP_DATA_EDIT_WIDTH - 250);
+                textField.setPrefWidth(APP_DATA_EDIT_WIDTH - 450);
                 hBox.getChildren().add(textField);
+
+                textField.textProperty().addListener((ob, oldVal, newVal) -> {
+                    //如果值改变则创建更新按钮
+                    if (!newVal.equals(oldVal)) {
+                        Button updateBtn = new Button("更新");
+                        if (hBox.getChildren().stream().noneMatch(child -> child instanceof Button)) {
+                            hBox.getChildren().add(updateBtn);
+                        }
+                    }
+                });
             }
+
 
             hBox.setAlignment(Pos.CENTER_LEFT);
             vBox.getChildren().add(hBox);

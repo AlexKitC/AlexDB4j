@@ -23,8 +23,8 @@ public class Config {
     // app初始height
     public static final int APP_HEIGHT = 900;
     // app数据编辑窗口宽高度
-    public static final int APP_DATA_EDIT_WIDTH = 1366;
-    public static final int APP_DATA_EDIT_HEIGHT = 768;
+    public static final int APP_DATA_EDIT_WIDTH = 1200;
+    public static final int APP_DATA_EDIT_HEIGHT = 720;
 
     // app内图标尺寸
     public static final int ICON_SIZE = 18;
