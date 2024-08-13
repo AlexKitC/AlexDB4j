@@ -790,7 +790,7 @@ public class HomeController {
                             if (hBox.getChildren().stream().noneMatch(child -> child instanceof Button)) {
                                 hBox.getChildren().add(updateBtn);
                             }
-                            updateRowDataTrigger(updateBtn, treeNode, dataMap.get(treeNode.getPkName()), entry.getKey(), newVal);
+                            updateRowDataTrigger(updateBtn, treeNode.getParent(), treeNode, dataMap.get(treeNode.getPkName()), entry.getKey(), newVal);
                         }
                     });
 
@@ -806,7 +806,7 @@ public class HomeController {
                             if (hBox.getChildren().stream().noneMatch(child -> child instanceof Button)) {
                                 hBox.getChildren().add(updateBtn);
                             }
-                            updateRowDataTrigger(updateBtn, treeNode, dataMap.get(treeNode.getPkName()), entry.getKey(), newVal);
+                            updateRowDataTrigger(updateBtn, treeNode.getParent(), treeNode, dataMap.get(treeNode.getPkName()), entry.getKey(), newVal);
                         }
                     });
                 }
@@ -828,7 +828,7 @@ public class HomeController {
                         if (hBox.getChildren().stream().noneMatch(child -> child instanceof Button)) {
                             hBox.getChildren().add(updateBtn);
                         }
-                        updateRowDataTrigger(updateBtn, treeNode, dataMap.get(treeNode.getPkName()), entry.getKey(), newVal);
+                        updateRowDataTrigger(updateBtn, treeNode.getParent(), treeNode, dataMap.get(treeNode.getPkName()), entry.getKey(), newVal);
                     }
                 });
             }
@@ -854,7 +854,7 @@ public class HomeController {
                 $.warning("提醒", "当前暂不支持缺乏主键的表数据更新");
                 return;
             }
-            treeNode.updateRowField(parent, treeNode, pkValue, key ,value);
+            treeNode.updateRowField(parent, treeNode, pkValue, key, value);
         });
     }
 
