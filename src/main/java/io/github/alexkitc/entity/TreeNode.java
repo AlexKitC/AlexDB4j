@@ -660,7 +660,7 @@ public class TreeNode {
     }
 
     // 更新数据
-    public void updateRowField(TreeNode parent, TreeNode treeNode, String pkValue, String key, String value) {
+    public void updateRowField(TreeNode parent, TreeNode treeNode, String pkValue, String key, String value, Text sqlText) {
         switch (treeNode.getConnItem().getDbTypeEnum()) {
             case MYSQL: {
                 String url = "jdbc:mysql://" + treeNode.getConnItem().getHost()
@@ -671,12 +671,12 @@ public class TreeNode {
                     Class.forName("com.mysql.cj.jdbc.Driver");
                     Connection conn = DriverManager.getConnection(url, treeNode.getConnItem().getUsername(), treeNode.getConnItem().getPassword());
                     Statement stmt = conn.createStatement();
-                    String sql = "UPDATE " + treeNode.getName() + " SET " + key + "='" + value + "' WHERE " + treeNode.getPkName() + "=" + pkValue;
-                    int effectRows = stmt.executeUpdate(sql);
+                    String sql = "UPDATE " + treeNode.getName() + " SET " + key + "='" + value + "' WHERE " + treeNode.getPkName() + "='" + pkValue + "'";
+                    sqlText.setText(sql);
+                    stmt.executeUpdate(sql);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
-                break;
 
             }
             case MONGODB: {
@@ -689,6 +689,8 @@ public class TreeNode {
                 break;
             }
         }
+
     }
+
 
 }

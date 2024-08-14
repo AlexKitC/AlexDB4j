@@ -600,7 +600,7 @@ public class HomeController {
                     }
                 }
 
-                drawTableViewDataEditPane(dataMap, treeNode);
+                drawTableViewDataEditPane(dataMap, treeNode, sqlText);
             }
         });
 
@@ -737,7 +737,7 @@ public class HomeController {
     }
 
     // 双击行数据传入列名和值绘制一个编辑面板
-    private void drawTableViewDataEditPane(Map<String, String> dataMap, TreeNode treeNode) {
+    private void drawTableViewDataEditPane(Map<String, String> dataMap, TreeNode treeNode, Text sqlText) {
         Stage tableViewDataEditStage = new Stage();
 
         tableViewDataEditStage.setTitle(Config.EDIT_TABLE_VIEW_DATA_TITLE + " " + treeNode.getConnItem().getHost() + " " + treeNode.getName());
@@ -790,7 +790,7 @@ public class HomeController {
                             if (hBox.getChildren().stream().noneMatch(child -> child instanceof Button)) {
                                 hBox.getChildren().add(updateBtn);
                             }
-                            updateRowDataTrigger(updateBtn, treeNode.getParent(), treeNode, dataMap.get(treeNode.getPkName()), entry.getKey(), newVal);
+                            updateRowDataTrigger(updateBtn, treeNode.getParent(), treeNode, dataMap.get(treeNode.getPkName()), entry.getKey(), newVal, sqlText);
                         }
                     });
 
@@ -806,7 +806,7 @@ public class HomeController {
                             if (hBox.getChildren().stream().noneMatch(child -> child instanceof Button)) {
                                 hBox.getChildren().add(updateBtn);
                             }
-                            updateRowDataTrigger(updateBtn, treeNode.getParent(), treeNode, dataMap.get(treeNode.getPkName()), entry.getKey(), newVal);
+                            updateRowDataTrigger(updateBtn, treeNode.getParent(), treeNode, dataMap.get(treeNode.getPkName()), entry.getKey(), newVal, sqlText);
                         }
                     });
                 }
@@ -823,12 +823,14 @@ public class HomeController {
 
                 textField.textProperty().addListener((ob, oldVal, newVal) -> {
                     //如果值改变则创建更新按钮
-                    if (!newVal.equals(oldVal)) {
+                    if (!newVal.equals(entry.getValue())) {
                         Button updateBtn = new Button("更新");
                         if (hBox.getChildren().stream().noneMatch(child -> child instanceof Button)) {
                             hBox.getChildren().add(updateBtn);
                         }
-                        updateRowDataTrigger(updateBtn, treeNode.getParent(), treeNode, dataMap.get(treeNode.getPkName()), entry.getKey(), newVal);
+                        updateRowDataTrigger(updateBtn, treeNode.getParent(), treeNode, dataMap.get(treeNode.getPkName()), entry.getKey(), newVal, sqlText);
+                    } else {
+                        hBox.getChildren().removeIf(node -> node instanceof Button);
                     }
                 });
             }
@@ -846,7 +848,8 @@ public class HomeController {
                                       TreeNode treeNode,
                                       String pkValue,
                                       String key,
-                                      String value) {
+                                      String value,
+                                      Text sqlText) {
         updateButton.setOnMouseClicked(ev -> {
             //获取当前行数据主键
             String pkName = treeNode.getPkName();
@@ -854,7 +857,8 @@ public class HomeController {
                 $.warning("提醒", "当前暂不支持缺乏主键的表数据更新");
                 return;
             }
-            treeNode.updateRowField(parent, treeNode, pkValue, key, value);
+            treeNode.updateRowField(parent, treeNode, pkValue, key, value, sqlText);
+
         });
     }
 
