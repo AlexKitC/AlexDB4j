@@ -42,7 +42,6 @@ public class App extends Application {
             root.setEffect(boxBlur);
 
             Scene scene = new Scene(root, Config.APP_WIDTH, Config.APP_HEIGHT);
-            scene.getStylesheets().add(APP_CSS_PATH);
 
             stage.setScene(scene);
 
