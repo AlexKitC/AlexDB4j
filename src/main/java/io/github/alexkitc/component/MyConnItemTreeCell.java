@@ -294,8 +294,27 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
 
             case DB: {
                 ContextMenu contextMenu = new ContextMenu();
-                MenuItem menuItemDeleteDb = new MenuItem("删除连接");
-                contextMenu.getItems().add(menuItemDeleteDb);
+                MenuItem menuItemCreateDb = new MenuItem("新建数据库");
+                MenuItem menuItemEditDb = new MenuItem("编辑");
+                MenuItem menuItemProperty = new MenuItem("属性");
+                MenuItem menuItemDeleteDb = new MenuItem("删除");
+                contextMenu.getItems().addAll(menuItemProperty,
+                        menuItemCreateDb,
+                        menuItemEditDb,
+                        menuItemDeleteDb);
+                return contextMenu;
+            }
+
+            case TABLE: {
+                ContextMenu contextMenu = new ContextMenu();
+                MenuItem menuItemCreateDb = new MenuItem("新建表");
+                MenuItem menuItemEditDb = new MenuItem("编辑");
+                MenuItem menuItemProperty = new MenuItem("属性");
+                MenuItem menuItemDeleteDb = new MenuItem("删除");
+                contextMenu.getItems().addAll(menuItemProperty,
+                        menuItemCreateDb,
+                        menuItemEditDb,
+                        menuItemDeleteDb);
                 return contextMenu;
             }
 
