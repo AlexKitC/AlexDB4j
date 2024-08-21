@@ -40,10 +40,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
 
 import static io.github.alexkitc.conf.Config.*;
 
@@ -299,94 +295,103 @@ public class HomeController {
         }
 
         tableView.setFixedCellSize(25);
+
         //获得表字段渲染
-        Future<List<TreeNode>> tableFieldListFuture = CompletableFuture.supplyAsync(() -> treeNode.getTableFieldList(parent, treeNode),
-                Executors.newVirtualThreadPerTaskExecutor());
-        List<TreeNode> tableFieldList;
-        try {
-            tableFieldList = tableFieldListFuture.get();
-        } catch (InterruptedException | ExecutionException e) {
-            throw new RuntimeException(e);
-        }
         // 表头
         ObservableList<TableColumn<RowData, ?>> columns = FXCollections.observableArrayList();
         List<String> colNameList = new ArrayList<>();
-        tableFieldList.forEach(col -> {
-            String colName = col.getName();
-            colNameList.add(colName);
-            TableColumn<RowData, String> column = new TableColumn<>(colName);
-            column.setMinWidth(Config.DEFAULT_COLUMN_MIN_WIDTH);
-            column.setMaxWidth(Config.DEFAULT_COLUMN_MAX_WIDTH);
-            // 单元格值工厂
-            column.setCellValueFactory(field -> {
-                try {
-                    // 获取 RowData 对象
-                    RowData rowData = field.getValue();
 
-                    // 使用反射获取 Map 中的值
-                    Method method = RowData.class.getMethod("get", String.class);
-                    Object value = method.invoke(rowData, colName);
-                    return new SimpleObjectProperty<>(value == null ? null : value.toString());
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
+        Thread.ofVirtual().start(() -> {
+            List<TreeNode> tableFieldList = treeNode.getTableFieldList(parent, treeNode);
+            Platform.runLater(() -> {
+                tableFieldList.forEach(col -> {
+                    String colName = col.getName();
+                    colNameList.add(colName);
+                    TableColumn<RowData, String> column = new TableColumn<>(colName);
+                    column.setMinWidth(Config.DEFAULT_COLUMN_MIN_WIDTH);
+                    column.setMaxWidth(Config.DEFAULT_COLUMN_MAX_WIDTH);
+                    // 单元格值工厂
+                    column.setCellValueFactory(field -> {
+                        try {
+                            // 获取 RowData 对象
+                            RowData rowData = field.getValue();
+
+                            // 使用反射获取 Map 中的值
+                            Method method = RowData.class.getMethod("get", String.class);
+                            Object value = method.invoke(rowData, colName);
+                            return new SimpleObjectProperty<>(value == null ? null : value.toString());
+                        } catch (Exception e) {
+                            throw new RuntimeException(e);
+                        }
+                    });
+
+                    columns.add(column);
+                });
+                // 设置表列
+                tableView.getColumns().setAll(columns);
             });
-
-            columns.add(column);
         });
-        // 设置表列
-        tableView.getColumns().setAll(columns);
+
 
         // 表数据
-        ObservableList<RowData> tableDataList = FXCollections.observableArrayList();
-        //获得表数据
-        treeNode.getTableRowDataList(parent,
-                treeNode,
-                columns,
-                tableDataList,
-                whereTextField.getText(),
-                orderbyTextField.getText(),
-                Integer.parseInt(defaultFetchRowTextField.getText()),
-                sqlText);
-
-        // 表赋值数据
-        tableView.setItems(tableDataList);
-        //刷新翻页按钮状态
-        refreshPageBtnReCalc(treeNode, Integer.parseInt(defaultFetchRowTextField.getText()), treeNode.getCurrentPage(), pageFirstBtn, pagePrevBtn, pageNextBtn, pageLastBtn);
+        Thread.ofVirtual().start(() -> {
+            ObservableList<RowData> tableDataList = FXCollections.observableArrayList();
+            //获得表数据
+            treeNode.getTableRowDataList(parent,
+                    treeNode,
+                    columns,
+                    tableDataList,
+                    whereTextField.getText(),
+                    orderbyTextField.getText(),
+                    Integer.parseInt(defaultFetchRowTextField.getText()),
+                    sqlText);
+            Platform.runLater(() -> {
+                // 表赋值数据
+                tableView.setItems(tableDataList);
+                //刷新翻页按钮状态
+                refreshPageBtnReCalc(treeNode, Integer.parseInt(defaultFetchRowTextField.getText()), treeNode.getCurrentPage(), pageFirstBtn, pagePrevBtn, pageNextBtn, pageLastBtn);
+            });
+        });
 
         //where, orderBy, limit输入框新增回车查询事件
         defaultFetchRowTextField.setOnKeyPressed(ev -> {
             if (ev.getCode() == KeyCode.ENTER) {
-                ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
-                treeNode.getTableRowDataList(parent,
-                        treeNode,
-                        columns,
-                        newTableDataList,
-                        whereTextField.getText(),
-                        orderbyTextField.getText(),
-                        Integer.parseInt(defaultFetchRowTextField.getText()), sqlText);
-                tableView.setItems(newTableDataList);
+                Thread.ofVirtual().start(() -> {
+                    ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
+                    treeNode.getTableRowDataList(parent,
+                            treeNode,
+                            columns,
+                            newTableDataList,
+                            whereTextField.getText(),
+                            orderbyTextField.getText(),
+                            Integer.parseInt(defaultFetchRowTextField.getText()), sqlText);
+                    Platform.runLater(() -> {
+                        tableView.setItems(newTableDataList);
 
-                refreshPageBtnReCalc(treeNode, Integer.parseInt(defaultFetchRowTextField.getText()), treeNode.getCurrentPage(), pageFirstBtn, pagePrevBtn, pageNextBtn, pageLastBtn);
+                        refreshPageBtnReCalc(treeNode, Integer.parseInt(defaultFetchRowTextField.getText()), treeNode.getCurrentPage(), pageFirstBtn, pagePrevBtn, pageNextBtn, pageLastBtn);
+                    });
+                });
             }
         });
         whereTextField.setOnKeyPressed(ev -> {
             if (ev.getCode() == KeyCode.ENTER) {
-                ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
-                treeNode.getTableRowDataList(parent,
-                        treeNode,
-                        columns,
-                        newTableDataList,
-                        whereTextField.getText(),
-                        orderbyTextField.getText(),
-                        Integer.parseInt(defaultFetchRowTextField.getText()), sqlText);
-                tableView.setItems(newTableDataList);
-
-                refreshPageBtnReCalc(treeNode, Integer.parseInt(defaultFetchRowTextField.getText()), treeNode.getCurrentPage(), pageFirstBtn, pagePrevBtn, pageNextBtn, pageLastBtn);
-
-                if (whereConditionStackPane.isVisible()) {
-                    whereConditionStackPane.setVisible(false);
-                }
+                Thread.ofVirtual().start(() -> {
+                    ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
+                    treeNode.getTableRowDataList(parent,
+                            treeNode,
+                            columns,
+                            newTableDataList,
+                            whereTextField.getText(),
+                            orderbyTextField.getText(),
+                            Integer.parseInt(defaultFetchRowTextField.getText()), sqlText);
+                    Platform.runLater(() -> {
+                        tableView.setItems(newTableDataList);
+                        refreshPageBtnReCalc(treeNode, Integer.parseInt(defaultFetchRowTextField.getText()), treeNode.getCurrentPage(), pageFirstBtn, pagePrevBtn, pageNextBtn, pageLastBtn);
+                        if (whereConditionStackPane.isVisible()) {
+                            whereConditionStackPane.setVisible(false);
+                        }
+                    });
+                });
             }
 
             //退出则隐藏语法提示面板
@@ -408,20 +413,24 @@ public class HomeController {
         });
         orderbyTextField.setOnKeyPressed(ev -> {
             if (ev.getCode() == KeyCode.ENTER) {
-                ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
-                treeNode.getTableRowDataList(parent,
-                        treeNode,
-                        columns,
-                        newTableDataList,
-                        whereTextField.getText(),
-                        orderbyTextField.getText(),
-                        Integer.parseInt(defaultFetchRowTextField.getText()), sqlText);
-                tableView.setItems(newTableDataList);
+                Thread.ofVirtual().start(() -> {
+                    ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
+                    treeNode.getTableRowDataList(parent,
+                            treeNode,
+                            columns,
+                            newTableDataList,
+                            whereTextField.getText(),
+                            orderbyTextField.getText(),
+                            Integer.parseInt(defaultFetchRowTextField.getText()), sqlText);
+                    Platform.runLater(() -> {
+                        tableView.setItems(newTableDataList);
 
-                refreshPageBtnReCalc(treeNode, Integer.parseInt(defaultFetchRowTextField.getText()), treeNode.getCurrentPage(), pageFirstBtn, pagePrevBtn, pageNextBtn, pageLastBtn);
-                if (orderByStackPane.isVisible()) {
-                    orderByStackPane.setVisible(false);
-                }
+                        refreshPageBtnReCalc(treeNode, Integer.parseInt(defaultFetchRowTextField.getText()), treeNode.getCurrentPage(), pageFirstBtn, pagePrevBtn, pageNextBtn, pageLastBtn);
+                        if (orderByStackPane.isVisible()) {
+                            orderByStackPane.setVisible(false);
+                        }
+                    });
+                });
             }
             //退出则隐藏语法提示面板
             //当语法提示出现的时候，Tab按键和方向键可直接提供输入
@@ -506,67 +515,83 @@ public class HomeController {
         // 分页事件
         pageFirstBtn.setOnAction(ev -> {
             treeNode.setCurrentPage(1);
-            ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
-            treeNode.getTableRowDataList(parent,
-                    treeNode,
-                    columns,
-                    newTableDataList,
-                    whereTextField.getText(),
-                    orderbyTextField.getText(),
-                    Integer.parseInt(defaultFetchRowTextField.getText()),
-                    sqlText);
-            tableView.setItems(newTableDataList);
-            refreshPageBtnReCalc(treeNode, Integer.parseInt(defaultFetchRowTextField.getText()), treeNode.getCurrentPage(), pageFirstBtn, pagePrevBtn, pageNextBtn, pageLastBtn);
+            Thread.ofVirtual().start(() -> {
+                ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
+                treeNode.getTableRowDataList(parent,
+                        treeNode,
+                        columns,
+                        newTableDataList,
+                        whereTextField.getText(),
+                        orderbyTextField.getText(),
+                        Integer.parseInt(defaultFetchRowTextField.getText()),
+                        sqlText);
+                Platform.runLater(() -> {
+                    tableView.setItems(newTableDataList);
+                    refreshPageBtnReCalc(treeNode, Integer.parseInt(defaultFetchRowTextField.getText()), treeNode.getCurrentPage(), pageFirstBtn, pagePrevBtn, pageNextBtn, pageLastBtn);
+                });
+            });
         });
 
         pagePrevBtn.setOnAction(ev -> {
             treeNode.setCurrentPage(treeNode.getCurrentPage() == 1 ? 1 : treeNode.getCurrentPage() - 1);
-            ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
-            treeNode.getTableRowDataList(parent,
-                    treeNode,
-                    columns,
-                    newTableDataList,
-                    whereTextField.getText(),
-                    orderbyTextField.getText(),
-                    Integer.parseInt(defaultFetchRowTextField.getText()),
-                    sqlText);
-            tableView.setItems(newTableDataList);
-            refreshPageBtnReCalc(treeNode, Integer.parseInt(defaultFetchRowTextField.getText()), treeNode.getCurrentPage(), pageFirstBtn, pagePrevBtn, pageNextBtn, pageLastBtn);
-
+            Thread.ofVirtual().start(() -> {
+                ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
+                treeNode.getTableRowDataList(parent,
+                        treeNode,
+                        columns,
+                        newTableDataList,
+                        whereTextField.getText(),
+                        orderbyTextField.getText(),
+                        Integer.parseInt(defaultFetchRowTextField.getText()),
+                        sqlText);
+                Platform.runLater(() -> {
+                    tableView.setItems(newTableDataList);
+                    refreshPageBtnReCalc(treeNode, Integer.parseInt(defaultFetchRowTextField.getText()), treeNode.getCurrentPage(), pageFirstBtn, pagePrevBtn, pageNextBtn, pageLastBtn);
+                });
+            });
         });
 
         pageNextBtn.setOnAction(ev -> {
             treeNode.setCurrentPage(treeNode.getCurrentPage() + 1);
-            ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
-            treeNode.getTableRowDataList(parent,
-                    treeNode,
-                    columns,
-                    newTableDataList,
-                    whereTextField.getText(),
-                    orderbyTextField.getText(),
-                    Integer.parseInt(defaultFetchRowTextField.getText()),
-                    sqlText);
 
-            tableView.setItems(newTableDataList);
-            refreshPageBtnReCalc(treeNode, Integer.parseInt(defaultFetchRowTextField.getText()), treeNode.getCurrentPage(), pageFirstBtn, pagePrevBtn, pageNextBtn, pageLastBtn);
+            Thread.ofVirtual().start(() -> {
+                ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
+                treeNode.getTableRowDataList(parent,
+                        treeNode,
+                        columns,
+                        newTableDataList,
+                        whereTextField.getText(),
+                        orderbyTextField.getText(),
+                        Integer.parseInt(defaultFetchRowTextField.getText()),
+                        sqlText);
+                Platform.runLater(() -> {
+                    tableView.setItems(newTableDataList);
+                    refreshPageBtnReCalc(treeNode, Integer.parseInt(defaultFetchRowTextField.getText()), treeNode.getCurrentPage(), pageFirstBtn, pagePrevBtn, pageNextBtn, pageLastBtn);
+                });
+            });
 
         });
 
         //最后一页
         pageLastBtn.setOnAction(ev -> {
             treeNode.setCurrentPage((int) Math.ceil((double) treeNode.getTableViewRowCount() / Integer.parseInt(defaultFetchRowTextField.getText())));
-            ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
-            treeNode.getTableRowDataList(parent,
-                    treeNode,
-                    columns,
-                    newTableDataList,
-                    whereTextField.getText(),
-                    orderbyTextField.getText(),
-                    Integer.parseInt(defaultFetchRowTextField.getText()),
-                    sqlText);
 
-            tableView.setItems(newTableDataList);
-            refreshPageBtnReCalc(treeNode, Integer.parseInt(defaultFetchRowTextField.getText()), treeNode.getCurrentPage(), pageFirstBtn, pagePrevBtn, pageNextBtn, pageLastBtn);
+            Thread.ofVirtual().start(() -> {
+                ObservableList<RowData> newTableDataList = FXCollections.observableArrayList();
+                treeNode.getTableRowDataList(parent,
+                        treeNode,
+                        columns,
+                        newTableDataList,
+                        whereTextField.getText(),
+                        orderbyTextField.getText(),
+                        Integer.parseInt(defaultFetchRowTextField.getText()),
+                        sqlText);
+
+                Platform.runLater(() -> {
+                    tableView.setItems(newTableDataList);
+                    refreshPageBtnReCalc(treeNode, Integer.parseInt(defaultFetchRowTextField.getText()), treeNode.getCurrentPage(), pageFirstBtn, pagePrevBtn, pageNextBtn, pageLastBtn);
+                });
+            });
 
         });
 
