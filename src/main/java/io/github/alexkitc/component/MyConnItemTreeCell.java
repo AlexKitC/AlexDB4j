@@ -7,6 +7,7 @@ import io.github.alexkitc.entity.TreeNode;
 import io.github.alexkitc.entity.enums.DbTypeEnum;
 import io.github.alexkitc.entity.enums.TreeNodeTypeEnum;
 import io.github.alexkitc.util.$;
+import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Pos;
 import javafx.scene.Parent;
@@ -60,27 +61,12 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
                             case MYSQL:
                             case MONGODB:
                             case REDIS: {
-                                Future<List<TreeNode>> future = CompletableFuture.supplyAsync(() -> getTreeItem().getValue().getDbList(getTreeItem().getValue()),
-                                        Executors.newVirtualThreadPerTaskExecutor());
-                                List<TreeNode> dbList;
-                                try {
-                                    dbList = future.get();
-                                } catch (InterruptedException | ExecutionException e) {
-                                    throw new RuntimeException(e);
-                                }
-                                List<String> historyDbList = getTreeItem().getChildren()
-                                        .stream()
-                                        .map(item -> item.getValue().getName())
-                                        .toList();
-                                if (dbList == null) {
-                                    return;
-                                }
-                                for (TreeNode db : dbList) {
-                                    if (!historyDbList.contains(db.getName())) {
-                                        getTreeItem().getChildren().add(new TreeItem<>(new TreeNode(db.getName(), TreeNodeTypeEnum.DB, Config.CONN_ICON_DB_PATH0, db.getConnItem())));
-                                    }
-                                }
-                                getTreeItem().setExpanded(true);
+                                // io线程
+                                Thread.ofVirtual().start(() -> {
+                                        List<TreeNode> dbList =  getTreeItem().getValue().getDbList(getTreeItem().getValue());
+                                        Platform.runLater(() -> updateConnDbUi(dbList));
+                                });
+
                                 break;
                             }
 
@@ -91,24 +77,11 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
 
                         break;
                     case DB: {
-                        CompletableFuture<List<TreeNode>> future = CompletableFuture.supplyAsync(() -> getTreeItem().getValue().getTableList(getTreeItem().getValue()),
-                                Executors.newVirtualThreadPerTaskExecutor());
-                        List<TreeNode> tableList;
-                        try {
-                            tableList = future.get();
-                        } catch (InterruptedException | ExecutionException e) {
-                            throw new RuntimeException(e);
-                        }
-                        List<String> historyTableList = getTreeItem().getChildren()
-                                .stream()
-                                .map(item -> item.getValue().getName())
-                                .toList();
-                        for (TreeNode table : tableList) {
-                            if (!historyTableList.contains(table.getName())) {
-                                getTreeItem().getChildren().add(new TreeItem<>(new TreeNode(table.getName(), TreeNodeTypeEnum.TABLE, Config.CONN_ICON_TABLE_PATH0, table.getConnItem())));
-                            }
-                        }
-                        getTreeItem().setExpanded(true);
+                        Thread.ofVirtual().start(() -> {
+                            List<TreeNode> tableList =  getTreeItem().getValue().getTableList(getTreeItem().getValue());
+                            Platform.runLater(() -> updateDbTableUi(tableList));
+                        });
+
                         break;
                     }
 
@@ -117,49 +90,17 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
                         // mongo不允许在用户线程中执行
                         if (getTreeItem().getValue().getConnItem().getDbTypeEnum().equals(DbTypeEnum.MONGODB)) {
                             tableFieldList = getTreeItem().getValue().getTableFieldList(getTreeItem().getParent().getValue(), getTreeItem().getValue());
+                            updateTableFieldUi(tableFieldList);
                         } else {
-                            Future<List<TreeNode>> future = CompletableFuture.supplyAsync(() -> getTreeItem().getValue().getTableFieldList(getTreeItem().getParent().getValue(), getTreeItem().getValue()),
-                                    Executors.newVirtualThreadPerTaskExecutor());
+                            //io线程执行数据获取
+                            Thread.ofVirtual().start(() -> {
+                                List<TreeNode> innerTableFieldList = getTreeItem().getValue().getTableFieldList(getTreeItem().getParent().getValue(), getTreeItem().getValue());
+                                Platform.runLater(() -> updateTableFieldUi(innerTableFieldList));
+                            });
 
-                            try {
-                                tableFieldList = future.get();
-                            } catch (InterruptedException | ExecutionException e) {
-                                throw new RuntimeException(e);
-                            }
                         }
 
-                        List<String> historyTableFieldList = getTreeItem().getChildren()
-                                .stream()
-                                .map(item -> item.getValue().getName())
-                                .toList();
-                        if (tableFieldList == null) {
-                            return;
-                        }
-                        for (TreeNode tableField : tableFieldList) {
-                            if (!historyTableFieldList.contains(tableField.getName())) {
-                                getTreeItem().getChildren().add(new TreeItem<>(new TreeNode(tableField.getName(), TreeNodeTypeEnum.FIELD, Config.CONN_ICON_FIELD_PATH0, tableField.getConnItem(), tableField.getTypeAndLength())));
-                            }
-                        }
-                        TreeNode innerParent = getTreeItem().getParent().getValue();
-                        getTreeItem().getValue().setParent(innerParent);
-                        // 新建TabPane容器展示数据
-                        switch (getTreeItem().getValue().getConnItem().getDbTypeEnum()) {
-                            case MYSQL:
-                                App.homeControllerInstance.addMysqlTabPaneOfData(getTreeItem().getParent().getValue(), getTreeItem().getValue());
-                                break;
-                            // redis类型需要展开TreeView
-                            case REDIS:
-                                TreeNode parent = getTreeItem().getParent().getValue();
-                                parent.setParent(parent.getParent());
-                                getTreeItem().setExpanded(true);
-                                break;
-                            case MONGODB:
-                                App.homeControllerInstance.addMysqlTabPaneOfData(getTreeItem().getParent().getValue(), getTreeItem().getValue());
 
-                                break;
-                            default:
-                                break;
-                        }
                         break;
                     }
 
@@ -177,6 +118,73 @@ public class MyConnItemTreeCell extends TreeCell<TreeNode> {
 
             }
         });
+    }
+
+    //更新db下的table列表-需要在platform的ui线程执行
+    private void updateDbTableUi(List<TreeNode> tableList) {
+        List<String> historyTableList = getTreeItem().getChildren()
+                .stream()
+                .map(item -> item.getValue().getName())
+                .toList();
+        for (TreeNode table : tableList) {
+            if (!historyTableList.contains(table.getName())) {
+                getTreeItem().getChildren().add(new TreeItem<>(new TreeNode(table.getName(), TreeNodeTypeEnum.TABLE, Config.CONN_ICON_TABLE_PATH0, table.getConnItem())));
+            }
+        }
+        getTreeItem().setExpanded(true);
+    }
+
+    // 更新连接下的db列表-需要在platform的ui线程执行
+    private void updateConnDbUi(List<TreeNode> dbList) {
+        List<String> historyDbList = getTreeItem().getChildren()
+                .stream()
+                .map(item -> item.getValue().getName())
+                .toList();
+        if (dbList == null) {
+            return;
+        }
+        for (TreeNode db : dbList) {
+            if (!historyDbList.contains(db.getName())) {
+                getTreeItem().getChildren().add(new TreeItem<>(new TreeNode(db.getName(), TreeNodeTypeEnum.DB, Config.CONN_ICON_DB_PATH0, db.getConnItem())));
+            }
+        }
+        getTreeItem().setExpanded(true);
+    }
+
+    // 更新表下的字段以及打开数据面板-需要在platform的ui线程执行
+    private void updateTableFieldUi(List<TreeNode> tableFieldList) {
+        List<String> historyTableFieldList = getTreeItem().getChildren()
+                .stream()
+                .map(item -> item.getValue().getName())
+                .toList();
+        if (tableFieldList == null) {
+            return;
+        }
+        for (TreeNode tableField : tableFieldList) {
+            if (!historyTableFieldList.contains(tableField.getName())) {
+                getTreeItem().getChildren().add(new TreeItem<>(new TreeNode(tableField.getName(), TreeNodeTypeEnum.FIELD, Config.CONN_ICON_FIELD_PATH0, tableField.getConnItem(), tableField.getTypeAndLength())));
+            }
+        }
+        TreeNode innerParent = getTreeItem().getParent().getValue();
+        getTreeItem().getValue().setParent(innerParent);
+        // 新建TabPane容器展示数据
+        switch (getTreeItem().getValue().getConnItem().getDbTypeEnum()) {
+            case MYSQL:
+                App.homeControllerInstance.addMysqlTabPaneOfData(getTreeItem().getParent().getValue(), getTreeItem().getValue());
+                break;
+            // redis类型需要展开TreeView
+            case REDIS:
+                TreeNode parent = getTreeItem().getParent().getValue();
+                parent.setParent(parent.getParent());
+                getTreeItem().setExpanded(true);
+                break;
+            case MONGODB:
+                App.homeControllerInstance.addMysqlTabPaneOfData(getTreeItem().getParent().getValue(), getTreeItem().getValue());
+
+                break;
+            default:
+                break;
+        }
     }
 
     // 重写TreeItem：添加图标和间距
