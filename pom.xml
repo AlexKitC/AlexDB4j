@@ -5,35 +5,83 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>io.github.alexkitc</groupId>
-    <artifactId>alexdbm</artifactId>
+    <artifactId>db</artifactId>
     <version>1.0-SNAPSHOT</version>
 
     <properties>
-        <flatlaf.version>3.5.1</flatlaf.version>
         <maven.compiler.source>21</maven.compiler.source>
         <maven.compiler.target>21</maven.compiler.target>
+        <openjfx.version>21.0.2</openjfx.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <dependencies>
+
+        <!-- https://mvnrepository.com/artifact/org.openjfx/javafx-controls -->
         <dependency>
-            <groupId>com.formdev</groupId>
-            <artifactId>flatlaf</artifactId>
-            <version>${flatlaf.version}</version>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>${openjfx.version}</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.formdev/flatlaf-intellij-themes -->
+        <!-- https://mvnrepository.com/artifact/org.openjfx/javafx-base -->
         <dependency>
-            <groupId>com.formdev</groupId>
-            <artifactId>flatlaf-intellij-themes</artifactId>
-            <version>${flatlaf.version}</version>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-base</artifactId>
+            <version>${openjfx.version}</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.openjfx/javafx-fxml -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-fxml</artifactId>
+            <version>${openjfx.version}</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/org.openjfx/javafx-graphics -->
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-graphics</artifactId>
+            <version>${openjfx.version}</version>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/org.projectlombok/lombok -->
         <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.30</version>
             <!--            <scope>provided</scope>-->
         </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.mysql/mysql-connector-j -->
+        <dependency>
+            <groupId>com.mysql</groupId>
+            <artifactId>mysql-connector-j</artifactId>
+            <version>8.0.33</version>
+        </dependency>
+
+<!--        json support-->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.10</version>
+        </dependency>
+
+<!--        redis support-->
+        <!-- https://mvnrepository.com/artifact/redis.clients/jedis -->
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
+            <version>5.1.4</version>
+        </dependency>
+
+<!--        mongo support-->
+        <!-- https://mvnrepository.com/artifact/org.mongodb/mongodb-driver-sync -->
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongodb-driver-sync</artifactId>
+            <version>5.1.2</version>
+        </dependency>
+
+
 
     </dependencies>
 
@@ -50,9 +98,9 @@
                             <goal>package</goal>
                         </goals>
                         <configuration>
-                            <mainClass>io.github.alexkitc.Main</mainClass>
+                            <mainClass>io.github.alexkitc.Bootstrap</mainClass>
                             <bundleJre>true</bundleJre>
-                            <vmArgs>-Xmx80m</vmArgs>
+                            <vmArgs>-Xmx2048m</vmArgs>
 
                         </configuration>
                     </execution>
@@ -61,13 +109,13 @@
         </plugins>
     </build>
 
-
     <repositories>
         <repository>
             <id>aliyun</id>
-            <url>https://maven.aliyun.com/repository/central</url>
+            <url>https://maven.aliyun.com/repository/public</url>
         </repository>
     </repositories>
+
 
     <pluginRepositories>
         <pluginRepository>

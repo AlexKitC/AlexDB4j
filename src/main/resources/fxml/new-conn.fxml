@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="io.github.alexkitc.controller.NewConnController">
+   <children>
+      <HBox layoutX="128.0" layoutY="117.0" prefHeight="400.0" prefWidth="600.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <VBox nodeOrientation="RIGHT_TO_LEFT" prefHeight="400.0" prefWidth="120.0">
+               <HBox.margin>
+                  <Insets left="60.0" />
+               </HBox.margin>
+               <children>
+                  <Label text="连接名">
+                     <VBox.margin>
+                        <Insets top="20.0" />
+                     </VBox.margin>
+                  </Label>
+                  <Label nodeOrientation="RIGHT_TO_LEFT" prefWidth="120.0" text="远程地址">
+                     <VBox.margin>
+                        <Insets top="24.0" />
+                     </VBox.margin>
+                  </Label>
+                  <Label nodeOrientation="RIGHT_TO_LEFT" prefWidth="120.0" text="类型">
+                     <VBox.margin>
+                        <Insets top="24.0" />
+                     </VBox.margin>
+                  </Label>
+                  <Label nodeOrientation="RIGHT_TO_LEFT" prefWidth="120.0" text="端口">
+                     <VBox.margin>
+                        <Insets top="24.0" />
+                     </VBox.margin>
+                  </Label>
+                  <Label nodeOrientation="RIGHT_TO_LEFT" prefWidth="120.0" text="用户名">
+                     <VBox.margin>
+                        <Insets top="24.0" />
+                     </VBox.margin>
+                  </Label>
+                  <Label nodeOrientation="RIGHT_TO_LEFT" prefWidth="120.0" text="密码">
+                     <VBox.margin>
+                        <Insets top="24.0" />
+                     </VBox.margin>
+                  </Label>
+                  <Button alignment="TOP_LEFT" mnemonicParsing="false" onAction="#onClickTestConn" text="测试连接">
+                     <VBox.margin>
+                        <Insets top="24.0" />
+                     </VBox.margin>
+                  </Button>
+                  <Button mnemonicParsing="false" onAction="#onClickCloseNewConn" text="关闭">
+                     <VBox.margin>
+                        <Insets top="48.0" />
+                     </VBox.margin>
+                  </Button>
+               </children>
+            </VBox>
+            <VBox prefHeight="400.0" prefWidth="270.0">
+               <HBox.margin>
+                  <Insets left="24.0" />
+               </HBox.margin>
+               <children>
+                  <TextField fx:id="conName">
+                     <VBox.margin>
+                        <Insets top="12.0" />
+                     </VBox.margin>
+                  </TextField>
+                  <TextField fx:id="host">
+                     <VBox.margin>
+                        <Insets top="18.0" />
+                     </VBox.margin>
+                  </TextField>
+                  <ComboBox fx:id="dbType" prefWidth="150.0">
+                     <VBox.margin>
+                        <Insets top="16.0" />
+                     </VBox.margin>
+                  </ComboBox>
+                  <TextField fx:id="port">
+                     <VBox.margin>
+                        <Insets top="14.0" />
+                     </VBox.margin>
+                  </TextField>
+                  <TextField fx:id="username">
+                     <VBox.margin>
+                        <Insets top="14.0" />
+                     </VBox.margin>
+                  </TextField>
+                  <TextField fx:id="pwd">
+                     <VBox.margin>
+                        <Insets top="16.0" />
+                     </VBox.margin>
+                  </TextField>
+                  <Label fx:id="testConnText" text="_">
+                     <VBox.margin>
+                        <Insets top="24.0" />
+                     </VBox.margin>
+                  </Label>
+                  <HBox nodeOrientation="RIGHT_TO_LEFT" prefHeight="26.0" prefWidth="270.0">
+                     <children>
+                        <Button alignment="TOP_LEFT" mnemonicParsing="false" onAction="#onClickSaveConn" text="保存" />
+                     </children>
+                     <VBox.margin>
+                        <Insets top="54.0" />
+                     </VBox.margin>
+                  </HBox>
+               </children>
+            </VBox>
+         </children>
+      </HBox>
+   </children>
+</AnchorPane>
